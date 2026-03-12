@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import type { PeriodDot } from "@/lib/benefits";
+import { getCurrentPeriodEligibleDate, generateYearPeriods, type PeriodDot, type Frequency } from "@/lib/benefits";
 
 interface AvailableBenefit {
   benefit_id: string;
@@ -83,8 +83,29 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
             : g
         );
       }
-      // Benefit not yet in groups — will be added on refresh
-      return prev;
+      // Benefit not yet in groups — create a new group with period dots
+      const freq = benefit.frequency as Frequency;
+      const periods = generateYearPeriods(freq, currentYear).map((p) => ({
+        ...p,
+        isUsed: p.eligible_date === benefit.eligibleDate,
+        used_benefit_id: p.eligible_date === benefit.eligibleDate ? crypto.randomUUID() : undefined,
+        used_at: p.eligible_date === benefit.eligibleDate ? new Date().toISOString() : undefined,
+        canUndo: p.eligible_date === benefit.eligibleDate,
+      }));
+      return [
+        ...prev,
+        {
+          benefit_id: benefit.benefit_id,
+          card_id: benefit.card_id,
+          benefit_description: benefit.benefit_description,
+          benefit_category: benefit.benefit_category,
+          value: benefit.value,
+          frequency: benefit.frequency,
+          usedCount: 1,
+          totalPeriods: periods.length,
+          periods,
+        },
+      ];
     });
 
     const { error } = await supabase.from("user_used_benefits").insert({
@@ -104,6 +125,62 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
                 usedCount: g.usedCount - 1,
                 periods: g.periods.map((p) =>
                   p.eligible_date === benefit.eligibleDate
+                    ? { ...p, isUsed: false, used_benefit_id: undefined, used_at: undefined, canUndo: false }
+                    : p
+                ),
+              }
+            : g
+        )
+      );
+    }
+
+    setActionInProgress(null);
+    router.refresh();
+  };
+
+  const markPeriodUsed = async (group: UsedBenefitGroup, period: PeriodDot) => {
+    const tempId = crypto.randomUUID();
+    setActionInProgress(tempId);
+
+    // Optimistic: fill the dot
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.benefit_id === group.benefit_id
+          ? {
+              ...g,
+              usedCount: g.usedCount + 1,
+              periods: g.periods.map((p) =>
+                p.eligible_date === period.eligible_date
+                  ? { ...p, isUsed: true, used_benefit_id: tempId, used_at: new Date().toISOString(), canUndo: true }
+                  : p
+              ),
+            }
+          : g
+      )
+    );
+
+    // Remove from available if it matches the current period
+    setAvailable((prev) =>
+      prev.filter((a) => !(a.benefit_id === group.benefit_id && a.eligibleDate === period.eligible_date))
+    );
+
+    const { error } = await supabase.from("user_used_benefits").insert({
+      user_id: userId,
+      benefit_id: group.benefit_id,
+      card_id: group.card_id,
+      eligible_date: period.eligible_date,
+    });
+
+    if (error) {
+      // Revert
+      setGroups((prev) =>
+        prev.map((g) =>
+          g.benefit_id === group.benefit_id
+            ? {
+                ...g,
+                usedCount: g.usedCount - 1,
+                periods: g.periods.map((p) =>
+                  p.eligible_date === period.eligible_date
                     ? { ...p, isUsed: false, used_benefit_id: undefined, used_at: undefined, canUndo: false }
                     : p
                 ),
@@ -138,18 +215,21 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
       )
     );
 
-    // Restore to available
-    const restored: AvailableBenefit = {
-      benefit_id: group.benefit_id,
-      card_id: group.card_id,
-      benefit_description: group.benefit_description,
-      benefit_category: group.benefit_category,
-      value: group.value,
-      frequency: group.frequency,
-      eligibleDate: period.eligible_date,
-      periodLabel: period.label,
-    };
-    setAvailable((prev) => [...prev, restored]);
+    // Only restore to available if it's the current period
+    const isCurrentPeriod = period.eligible_date === getCurrentPeriodEligibleDate(group.frequency as Frequency);
+    if (isCurrentPeriod) {
+      const restored: AvailableBenefit = {
+        benefit_id: group.benefit_id,
+        card_id: group.card_id,
+        benefit_description: group.benefit_description,
+        benefit_category: group.benefit_category,
+        value: group.value,
+        frequency: group.frequency,
+        eligibleDate: period.eligible_date,
+        periodLabel: period.label,
+      };
+      setAvailable((prev) => [...prev, restored]);
+    }
 
     const { error } = await supabase
       .from("user_used_benefits")
@@ -172,14 +252,17 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
             : g
         )
       );
-      setAvailable((prev) => prev.filter((a) => !(a.benefit_id === group.benefit_id && a.eligibleDate === period.eligible_date)));
+      if (isCurrentPeriod) {
+        setAvailable((prev) => prev.filter((a) => !(a.benefit_id === group.benefit_id && a.eligibleDate === period.eligible_date)));
+      }
     }
 
     setActionInProgress(null);
     router.refresh();
   };
 
-  const totalUsedValue = groups.reduce((sum, g) => sum + g.usedCount * Number(g.value), 0);
+  const activeGroups = groups.filter((g) => g.usedCount > 0);
+  const totalUsedValue = activeGroups.reduce((sum, g) => sum + g.usedCount * Number(g.value), 0);
 
   return (
     <div>
@@ -278,7 +361,7 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
             Your redeemed benefits for {currentYear}. Filled dots are periods you&apos;ve used.
           </p>
 
-          {groups.length === 0 ? (
+          {activeGroups.length === 0 ? (
             <div className="bg-card border border-border rounded-2xl p-8 text-center">
               <p className="text-muted-foreground text-sm">
                 No benefits used yet this year. Mark available benefits as used to track them here.
@@ -286,7 +369,7 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
             </div>
           ) : (
             <div className="space-y-3">
-              {groups.map((group) => (
+              {activeGroups.map((group) => (
                 <div key={group.benefit_id} className="bg-card border border-border rounded-2xl p-4">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <span
@@ -312,10 +395,8 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
                         {period.isUsed ? (
                           <div className="relative group">
                             <div
-                              className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                                period.canUndo
-                                  ? "bg-success cursor-pointer hover:bg-success/70 transition-colors"
-                                  : "bg-success"
+                              className={`w-5 h-5 rounded-full flex items-center justify-center bg-success ${
+                                period.canUndo ? "cursor-pointer hover:bg-success/70 transition-colors" : ""
                               }`}
                               onClick={() => period.canUndo && undoPeriod(group, period)}
                               title={
@@ -334,15 +415,22 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
                               </span>
                             )}
                           </div>
-                        ) : (
+                        ) : period.isFuture ? (
                           <div
-                            className={`w-5 h-5 rounded-full border-2 ${
-                              period.isFuture
-                                ? "border-border/50"
-                                : "border-muted-foreground/30"
-                            }`}
-                            title={period.isFuture ? `${period.label} (upcoming)` : `${period.label} (not used)`}
+                            className="w-5 h-5 rounded-full border-2 border-border/50"
+                            title={`${period.label} (upcoming)`}
                           />
+                        ) : (
+                          <div className="relative group">
+                            <div
+                              className="w-5 h-5 rounded-full border-2 border-muted-foreground/30 cursor-pointer hover:border-success hover:bg-success/10 transition-all"
+                              onClick={() => markPeriodUsed(group, period)}
+                              title={`${period.label} — click to mark as used`}
+                            />
+                            <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] bg-foreground text-background px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                              Mark used
+                            </span>
+                          </div>
                         )}
                         <span
                           className={`text-[10px] leading-none ${

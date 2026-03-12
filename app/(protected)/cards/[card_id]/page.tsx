@@ -105,7 +105,7 @@ export default async function CardDetailPage({ params }: Props) {
           isUsed: !!usage,
           used_benefit_id: usage?.used_benefit_id,
           used_at: usage?.used_at,
-          canUndo: !!usage && p.eligible_date === getCurrentPeriodEligibleDate(b.frequency),
+          canUndo: !!usage && !p.isFuture,
         };
       });
       return {
