@@ -285,7 +285,7 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <CategoryBadge category={benefit.benefit_category} />
-                      <span className="text-xs text-muted-foreground">{benefit.periodLabel}</span>
+                      <span className="text-xs text-muted-foreground">Valid for {benefit.periodLabel}</span>
                     </div>
                     <p className="font-medium text-sm">
                       {benefit.benefit_type === "free_night" ? (

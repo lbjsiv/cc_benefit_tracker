@@ -68,28 +68,28 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
   return (
     <div>
       {/* Summary Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-card border border-border rounded-2xl p-6">
-          <p className="text-sm text-muted-foreground font-medium">Available Credits</p>
-          <p className="text-3xl font-bold text-success mt-1">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6">
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Available Credits</p>
+          <p className="text-2xl sm:text-3xl font-bold text-success mt-1">
             ${totalAvailableValue.toLocaleString()}
           </p>
         </div>
-        <div className="bg-card border border-border rounded-2xl p-6">
-          <p className="text-sm text-muted-foreground font-medium">Used Credits</p>
-          <p className="text-3xl font-bold text-foreground mt-1">
+        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6">
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Used Credits</p>
+          <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">
             ${totalUsedCreditsValue.toLocaleString()}
           </p>
         </div>
-        <div className="bg-card border border-border rounded-2xl p-6">
-          <p className="text-sm text-muted-foreground font-medium">Available Free Nights</p>
-          <p className="text-3xl font-bold text-success mt-1">
+        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6">
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Available Free Nights</p>
+          <p className="text-2xl sm:text-3xl font-bold text-success mt-1">
             {totalAvailableFreeNights}
           </p>
         </div>
-        <div className="bg-card border border-border rounded-2xl p-6">
-          <p className="text-sm text-muted-foreground font-medium">Used Free Nights</p>
-          <p className="text-3xl font-bold text-foreground mt-1">
+        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6">
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Used Free Nights</p>
+          <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">
             {totalUsedFreeNights}
           </p>
         </div>
@@ -100,7 +100,7 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
         <h2 className="text-xl font-bold text-foreground">Your Cards</h2>
         <Link
           href="/cards"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-base hover:opacity-90 transition-opacity"
         >
           + Add Card
         </Link>
@@ -145,7 +145,7 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
               </button>
             ) : null}
             <Link href={`/cards/${card.card_id}`} className="block px-4 py-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <CardBadge cardName={card.card_name} acronym={card.card_badge_acronym} color={card.card_badge_color} />
                 <div className="min-w-0 pr-6">
                   <h3 className="font-semibold text-foreground truncate">{card.card_name}</h3>

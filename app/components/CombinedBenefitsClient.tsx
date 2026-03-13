@@ -279,7 +279,7 @@ export default function CombinedBenefitsClient({ title, subtitle, userId, availa
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <CardBadge cardName={benefit.card_name ?? ""} acronym={benefit.card_badge_acronym} color={benefit.card_badge_color} size="sm" />
                       <CategoryBadge category={benefit.benefit_category} />
-                      <span className="text-xs text-muted-foreground">{benefit.periodLabel}</span>
+                      <span className="text-xs text-muted-foreground">Valid for {benefit.periodLabel}</span>
                     </div>
                     <p className="font-medium text-sm">
                       {benefit.benefit_type === "free_night" ? (

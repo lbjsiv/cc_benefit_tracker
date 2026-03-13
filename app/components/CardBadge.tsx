@@ -15,23 +15,29 @@ function getFallbackAcronym(cardName: string): string {
   return acronym || "CC";
 }
 
+function lighten(hex: string, amount: number): string {
+  const num = parseInt(hex.replace("#", ""), 16);
+  const r = Math.min(255, (num >> 16) + Math.round(amount * 255));
+  const g = Math.min(255, ((num >> 8) & 0xff) + Math.round(amount * 255));
+  const b = Math.min(255, (num & 0xff) + Math.round(amount * 255));
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 export default function CardBadge({ cardName, acronym, color, size = "sm" }: CardBadgeProps) {
   const displayAcronym = acronym || getFallbackAcronym(cardName);
   const bgColor = color || "#737373";
   const isLg = size === "lg";
+  const dim = isLg ? "w-14 h-14" : "w-12 h-12";
+  const fontSize = isLg ? "text-sm" : "text-xs";
 
   return (
     <div
-      className={`rounded-lg flex items-center justify-center shrink-0 ${
-        isLg ? "w-16 h-10" : "w-14 h-9"
-      }`}
-      style={{ backgroundColor: bgColor }}
+      className={`rounded-full flex items-center justify-center shrink-0 shadow-sm ring-1 ring-white/20 ${dim}`}
+      style={{
+        background: `linear-gradient(135deg, ${lighten(bgColor, 0.15)} 0%, ${bgColor} 100%)`,
+      }}
     >
-      <span
-        className={`font-bold text-white tracking-wide ${
-          isLg ? "text-sm" : "text-xs"
-        }`}
-      >
+      <span className={`font-bold text-white tracking-wider ${fontSize}`}>
         {displayAcronym}
       </span>
     </div>
