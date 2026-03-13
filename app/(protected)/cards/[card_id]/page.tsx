@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import {
+  getNow,
   getCurrentPeriodEligibleDate,
   getPeriodLabel,
   generateYearPeriods,
@@ -46,7 +47,7 @@ export default async function CardDetailPage({ params }: Props) {
     .eq("card_id", card_id);
 
   // Get all used benefits for this user + card in the current year
-  const currentYear = new Date().getFullYear();
+  const currentYear = getNow().getFullYear();
   const { data: usedBenefits } = await supabase
     .from("user_used_benefits")
     .select("*, card_benefits(frequency)")

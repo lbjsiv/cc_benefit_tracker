@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import {
+  getNow,
   getCurrentPeriodEligibleDate,
   getPeriodLabel,
   generateYearPeriods,
@@ -61,7 +62,7 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
 
   const benefits = (benefitsData ?? []) as BenefitRow[];
 
-  const currentYear = new Date().getFullYear();
+  const currentYear = getNow().getFullYear();
   const { data: usedBenefitsData } = await supabase
     .from("user_used_benefits")
     .select("*, card_benefits(frequency)")

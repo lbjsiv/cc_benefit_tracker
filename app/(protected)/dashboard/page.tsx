@@ -10,7 +10,7 @@ export default async function DashboardPage() {
 
   const { data: trackedCards } = await supabase
     .from("user_tracked_cards")
-    .select("card_id, dim_all_cards(card_id, card_name, card_issuer, image_url, card_badge_acronym, card_badge_color)")
+    .select("card_id, dim_all_cards(card_id, card_name, card_issuer, image_url, card_badge_acronym, card_badge_color, card_points_multipliers)")
     .eq("user_id", user.id);
 
   const cardIds = trackedCards?.map((tc) => tc.card_id) ?? [];
@@ -50,17 +50,26 @@ export default async function DashboardPage() {
       image_url: string;
       card_badge_acronym: string | null;
       card_badge_color: string | null;
+      card_points_multipliers: string | null;
     };
 
     const cardBenefits = benefits.filter((b) => b.card_id === tc.card_id);
     let availableCount = 0;
     let availableValue = 0;
     let availableFreeNights = 0;
+    let usedCreditsValue = 0;
+    let usedFreeNights = 0;
 
     cardBenefits.forEach((b) => {
       const eligibleDate = getCurrentPeriodEligibleDate(b.frequency);
       const key = `${b.benefit_id}_${eligibleDate}`;
-      if (!usedSet.has(key)) {
+      if (usedSet.has(key)) {
+        if (b.benefit_type === "free_night") {
+          usedFreeNights++;
+        } else {
+          usedCreditsValue += Number(b.value);
+        }
+      } else {
         availableCount++;
         if (b.benefit_type === "free_night") {
           availableFreeNights++;
@@ -77,14 +86,19 @@ export default async function DashboardPage() {
       image_url: card.image_url,
       card_badge_acronym: card.card_badge_acronym,
       card_badge_color: card.card_badge_color,
+      card_points_multipliers: card.card_points_multipliers,
       availableCount,
       availableValue,
       availableFreeNights,
+      usedCreditsValue,
+      usedFreeNights,
     };
   });
 
   const totalAvailableValue = cards.reduce((sum, c) => sum + c.availableValue, 0);
   const totalAvailableFreeNights = cards.reduce((sum, c) => sum + c.availableFreeNights, 0);
+  const totalUsedCreditsValue = cards.reduce((sum, c) => sum + c.usedCreditsValue, 0);
+  const totalUsedFreeNights = cards.reduce((sum, c) => sum + c.usedFreeNights, 0);
 
   return (
     <DashboardClient
@@ -92,6 +106,8 @@ export default async function DashboardPage() {
       totalCards={cards.length}
       totalAvailableValue={totalAvailableValue}
       totalAvailableFreeNights={totalAvailableFreeNights}
+      totalUsedCreditsValue={totalUsedCreditsValue}
+      totalUsedFreeNights={totalUsedFreeNights}
     />
   );
 }

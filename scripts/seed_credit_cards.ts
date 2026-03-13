@@ -61,7 +61,23 @@ const cards: CardInput[] = [
         benefit_type: "credit",
         value: 50,
         frequency: "half-yearly",
-        benefit_notes: "$50 for Jan-Jun & $50 for Jul-Dec.",
+        benefit_notes: "",
+      },
+      {
+        benefit_description: "$100 Resy Dining Credit",
+        benefit_category: "Dining",
+        benefit_type: "credit",
+        value: 100,
+        frequency: "quarterly",
+        benefit_notes: "Eligible purchases at U.S. Resy restaurants.",
+      },
+      {
+        benefit_description: "$75 lululemon Credit",
+        benefit_category: "Shopping",
+        benefit_type: "credit",
+        value: 75,
+        frequency: "quarterly",
+        benefit_notes: "Purchases at U.S. lululemon stores or online.",
       },
       {
         benefit_description: "$200 Airline Fee Credit",
@@ -137,7 +153,7 @@ const cards: CardInput[] = [
   },
   {
     card_id: "a1b2c3d4-0004-4000-8000-000000000004",
-    card_name: "Chase IHG One Rewards Premier",
+    card_name: "Chase IHG Premier",
     card_issuer: "Chase",
     image_url: "/cards/chase-ihg-premier.png",
     card_points_multipliers: "Up to 26X IHG · 5X Travel, dining & gas",
@@ -156,7 +172,7 @@ const cards: CardInput[] = [
   },
   {
     card_id: "a1b2c3d4-0005-4000-8000-000000000005",
-    card_name: "Chase Marriott Bonvoy Boundless",
+    card_name: "Chase Marriott Boundless",
     card_issuer: "Chase",
     image_url: "/cards/chase-marriott-boundless.png",
     card_points_multipliers: "Up to 17X Marriott · 3X Gas, groceries & dining (on first $6k/yr) · 2X Other Travel",
@@ -183,7 +199,7 @@ const cards: CardInput[] = [
     card_badge_color: "#5b21b6",
     benefits: [
       {
-        benefit_description: "$400 Hilton Resort Credit",
+        benefit_description: "$200 Hilton Resort Credit",
         benefit_category: "Travel",
         benefit_type: "credit",
         value: 200,
@@ -215,7 +231,7 @@ const cards: CardInput[] = [
     image_url: "/cards/chase-world-of-hyatt.png",
     card_points_multipliers: "Up to 9X Hyatt · 2X Dining, flights, local transit & gyms",
     card_badge_acronym: "WoH",
-    card_badge_color: "#c2410c",
+    card_badge_color: "#1a56db",
     benefits: [
       {
         benefit_description: "Category 1-4 Hyatt Free Night",

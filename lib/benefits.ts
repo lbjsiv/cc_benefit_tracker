@@ -1,6 +1,12 @@
 export type Frequency = "monthly" | "quarterly" | "half-yearly" | "yearly";
 export type BenefitType = "credit" | "free_night";
 
+export function getNow(): Date {
+  const testDate = process.env.NEXT_PUBLIC_TEST_DATE;
+  if (testDate) return new Date(testDate + "T00:00:00");
+  return new Date();
+}
+
 export function getEligibleDate(date: Date, frequency: Frequency): string {
   const year = date.getFullYear();
   const month = date.getMonth(); // 0-indexed
@@ -43,12 +49,11 @@ export function getPeriodLabel(eligibleDate: string, frequency: Frequency): stri
 }
 
 export function getCurrentPeriodEligibleDate(frequency: Frequency): string {
-  return getEligibleDate(new Date(), frequency);
+  return getEligibleDate(getNow(), frequency);
 }
 
 export function isWithinRedemptionWindow(eligibleDate: string, frequency: Frequency): boolean {
-  const now = new Date();
-  const currentEligible = getEligibleDate(now, frequency);
+  const currentEligible = getEligibleDate(getNow(), frequency);
   return eligibleDate === currentEligible;
 }
 
@@ -65,8 +70,7 @@ export interface PeriodDot {
 }
 
 export function generateYearPeriods(frequency: Frequency, year: number): Omit<PeriodDot, "isUsed" | "used_benefit_id" | "used_at" | "canUndo">[] {
-  const now = new Date();
-  const currentEligible = getEligibleDate(now, frequency);
+  const currentEligible = getEligibleDate(getNow(), frequency);
 
   switch (frequency) {
     case "monthly":

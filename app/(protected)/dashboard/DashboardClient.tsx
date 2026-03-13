@@ -13,9 +13,12 @@ interface CardSummary {
   image_url: string;
   card_badge_acronym?: string | null;
   card_badge_color?: string | null;
+  card_points_multipliers?: string | null;
   availableCount: number;
   availableValue: number;
   availableFreeNights: number;
+  usedCreditsValue: number;
+  usedFreeNights: number;
 }
 
 interface Props {
@@ -23,9 +26,11 @@ interface Props {
   totalCards: number;
   totalAvailableValue: number;
   totalAvailableFreeNights: number;
+  totalUsedCreditsValue: number;
+  totalUsedFreeNights: number;
 }
 
-export default function DashboardClient({ cards, totalCards, totalAvailableValue, totalAvailableFreeNights }: Props) {
+export default function DashboardClient({ cards, totalCards, totalAvailableValue, totalAvailableFreeNights, totalUsedCreditsValue, totalUsedFreeNights }: Props) {
   const router = useRouter();
   const supabase = createClient();
   const [removingCardId, setRemovingCardId] = useState<string | null>(null);
@@ -63,25 +68,31 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
   return (
     <div>
       {/* Summary Bar */}
-      <div className={`grid grid-cols-1 ${totalAvailableFreeNights > 0 ? "sm:grid-cols-3" : "sm:grid-cols-2"} gap-4 mb-8`}>
-        <div className="bg-card border border-border rounded-2xl p-6">
-          <p className="text-sm text-muted-foreground font-medium">Tracked Cards</p>
-          <p className="text-3xl font-bold text-foreground mt-1">{totalCards}</p>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-card border border-border rounded-2xl p-6">
           <p className="text-sm text-muted-foreground font-medium">Available Credits</p>
           <p className="text-3xl font-bold text-success mt-1">
             ${totalAvailableValue.toLocaleString()}
           </p>
         </div>
-        {totalAvailableFreeNights > 0 && (
-          <div className="bg-card border border-border rounded-2xl p-6">
-            <p className="text-sm text-muted-foreground font-medium">Available Free Nights</p>
-            <p className="text-3xl font-bold text-success mt-1">
-              {totalAvailableFreeNights}
-            </p>
-          </div>
-        )}
+        <div className="bg-card border border-border rounded-2xl p-6">
+          <p className="text-sm text-muted-foreground font-medium">Used Credits</p>
+          <p className="text-3xl font-bold text-foreground mt-1">
+            ${totalUsedCreditsValue.toLocaleString()}
+          </p>
+        </div>
+        <div className="bg-card border border-border rounded-2xl p-6">
+          <p className="text-sm text-muted-foreground font-medium">Available Free Nights</p>
+          <p className="text-3xl font-bold text-success mt-1">
+            {totalAvailableFreeNights}
+          </p>
+        </div>
+        <div className="bg-card border border-border rounded-2xl p-6">
+          <p className="text-sm text-muted-foreground font-medium">Used Free Nights</p>
+          <p className="text-3xl font-bold text-foreground mt-1">
+            {totalUsedFreeNights}
+          </p>
+        </div>
       </div>
 
       {/* Header + Add Button */}
@@ -138,6 +149,9 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
                 <CardBadge cardName={card.card_name} acronym={card.card_badge_acronym} color={card.card_badge_color} />
                 <div className="min-w-0 pr-6">
                   <h3 className="font-semibold text-foreground truncate">{card.card_name}</h3>
+                  {card.card_points_multipliers && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{card.card_points_multipliers}</p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">

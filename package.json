@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:date": "NEXT_PUBLIC_TEST_DATE=$DATE next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

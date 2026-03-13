@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { getCurrentPeriodEligibleDate, generateYearPeriods, type PeriodDot, type Frequency } from "@/lib/benefits";
+import { getNow, getCurrentPeriodEligibleDate, generateYearPeriods, type PeriodDot, type Frequency } from "@/lib/benefits";
 import type { AvailableBenefit, UsedBenefitGroup } from "@/lib/types";
 import CardBadge from "@/app/components/CardBadge";
 import CategoryBadge from "@/app/components/CategoryBadge";
@@ -25,7 +25,8 @@ export default function CombinedBenefitsClient({ title, subtitle, userId, availa
   const [groups, setGroups] = useState(usedBenefitGroups);
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
 
-  const currentYear = new Date().getFullYear();
+  const now = getNow();
+  const currentYear = now.getFullYear();
 
   const markAsUsed = async (benefit: AvailableBenefit) => {
     setActionInProgress(benefit.benefit_id);
@@ -248,19 +249,14 @@ export default function CombinedBenefitsClient({ title, subtitle, userId, availa
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Available */}
         <div>
-          <h2 className="text-lg font-bold text-foreground mb-1">
-            Available
+          <h2 className="text-lg font-bold text-foreground mb-4">
+            Available for {now.toLocaleDateString("en-US", { month: "long" })}
             {available.length > 0 && (
               <span className="ml-2 text-sm font-normal text-muted-foreground">
                 ({available.length})
               </span>
             )}
           </h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            {isCredit
-              ? `Credits you can use for ${new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}.`
-              : "Free night certificates available to redeem."}
-          </p>
 
           {available.length === 0 ? (
             <div className="bg-card border border-border rounded-2xl p-8 text-center">
@@ -285,14 +281,18 @@ export default function CombinedBenefitsClient({ title, subtitle, userId, availa
                       <CategoryBadge category={benefit.benefit_category} />
                       <span className="text-xs text-muted-foreground">{benefit.periodLabel}</span>
                     </div>
-                    <p className="font-medium text-foreground text-sm">{benefit.benefit_description}</p>
+                    <p className="font-medium text-sm">
+                      {benefit.benefit_type === "free_night" ? (
+                        <span className="text-foreground">{benefit.benefit_description}</span>
+                      ) : (
+                        <>
+                          <span className="text-success font-bold">${Number(benefit.value).toLocaleString()}</span>
+                          <span className="text-foreground">{" "}{benefit.benefit_description.replace(/^\$[\d,]+\s*/, "")}</span>
+                        </>
+                      )}
+                    </p>
                     {benefit.benefit_notes && (
                       <p className="text-xs text-muted-foreground mt-0.5">{benefit.benefit_notes}</p>
-                    )}
-                    {isCredit ? (
-                      <p className="text-success font-bold text-sm mt-0.5">${Number(benefit.value).toLocaleString()}</p>
-                    ) : (
-                      <p className="text-success font-bold text-sm mt-0.5">Free Night</p>
                     )}
                   </div>
                   <button
@@ -313,8 +313,8 @@ export default function CombinedBenefitsClient({ title, subtitle, userId, availa
 
         {/* Used */}
         <div>
-          <h2 className="text-lg font-bold text-foreground mb-1">
-            Used
+          <h2 className="text-lg font-bold text-foreground mb-4">
+            Used for {currentYear}
             {(totalUsedValue > 0 || totalFreeNightsUsed > 0) && (
               <span className="ml-2 text-sm font-normal text-muted-foreground">
                 ({isCredit
@@ -323,11 +323,6 @@ export default function CombinedBenefitsClient({ title, subtitle, userId, availa
               </span>
             )}
           </h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            {isCredit
-              ? `Redeemed credits for ${currentYear}. Filled dots are periods you've used.`
-              : `Free nights redeemed for ${currentYear}.`}
-          </p>
 
           {activeGroups.length === 0 ? (
             <div className="bg-card border border-border rounded-2xl p-8 text-center">
@@ -350,11 +345,6 @@ export default function CombinedBenefitsClient({ title, subtitle, userId, availa
                   {group.benefit_notes && (
                     <p className="text-xs text-muted-foreground mt-0.5">{group.benefit_notes}</p>
                   )}
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {isCredit
-                      ? `$${Number(group.value).toLocaleString()} per ${group.frequency === "half-yearly" ? "half" : group.frequency.replace("ly", "")}`
-                      : `Free Night · ${group.frequency}`}
-                  </p>
 
                   <PeriodDots
                     periods={group.periods}
