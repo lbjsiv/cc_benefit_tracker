@@ -27,7 +27,7 @@ export default async function FreeNightsPage() {
   return (
     <CombinedBenefitsClient
       title="Free Night Benefits"
-      subtitle="Free night certificates across your tracked cards."
+      subtitle="All free night certificates across your tracked cards."
       userId={data.userId}
       availableBenefits={data.availableBenefits}
       usedBenefitGroups={data.usedBenefitGroups}

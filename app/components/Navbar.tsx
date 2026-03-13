@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useState, useEffect } from "react";
+import { getNow } from "@/lib/benefits";
 import Logo from "@/app/components/Logo";
 
 export default function Navbar() {
@@ -52,6 +53,9 @@ export default function Navbar() {
             </Link>
           </div>
           <div className="flex items-center gap-4">
+            <span className="text-xs text-muted-foreground hidden sm:inline">
+              {getNow().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+            </span>
             {email && (
               <span className="text-xs text-muted-foreground hidden sm:inline">{email}</span>
             )}

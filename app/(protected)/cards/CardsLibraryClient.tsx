@@ -126,6 +126,18 @@ export default function CardsLibraryClient({ cards, userId }: Props) {
           <p className="text-muted-foreground">No cards match your search.</p>
         </div>
       )}
+
+      <div className="mt-8 text-center py-6 border-t border-border">
+        <p className="text-sm text-muted-foreground">
+          Cannot find the card you want?{" "}
+          <a
+            href="mailto:bsivlu@gmail.com?subject=Card%20Request%20-%20BenefitTracker&body=Hi%2C%0A%0AI%27d%20like%20to%20request%20the%20following%20card%20to%20be%20added%3A%0A%0ACard%20Name%3A%20%0AIssuer%3A%20%0A%0AThanks!"
+            className="text-primary font-medium hover:underline"
+          >
+            Send us a request
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

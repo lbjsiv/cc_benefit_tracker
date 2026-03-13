@@ -27,7 +27,7 @@ export default async function CreditBenefitsPage() {
   return (
     <CombinedBenefitsClient
       title="Credit Benefits"
-      subtitle="All credit benefits across your tracked cards."
+      subtitle="All credits across your tracked cards."
       userId={data.userId}
       availableBenefits={data.availableBenefits}
       usedBenefitGroups={data.usedBenefitGroups}
