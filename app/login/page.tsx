@@ -218,6 +218,17 @@ export default function LoginPage() {
                     />
                   </div>
 
+                  {tab === "login" && (
+                    <div className="flex justify-end -mt-1">
+                      <a
+                        href="/forgot-password"
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Forgot password?
+                      </a>
+                    </div>
+                  )}
+
                   {tab === "signup" && (
                     <div>
                       <label htmlFor="inviteCode" className="block text-sm font-medium text-foreground mb-1.5">
