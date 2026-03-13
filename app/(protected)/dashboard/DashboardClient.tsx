@@ -83,7 +83,7 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
           </p>
         </div>
         <div className="bg-card border border-border rounded-2xl p-4 sm:p-6">
-          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Available Free Nights in {getNow().getFullYear()}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Available Free Nights in {getNow().toLocaleDateString("en-US", { month: "long" })}</p>
           <p className="text-2xl sm:text-3xl font-bold text-success mt-1">
             {totalAvailableFreeNights}
           </p>
