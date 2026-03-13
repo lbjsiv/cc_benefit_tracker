@@ -82,6 +82,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
 
@@ -99,6 +100,11 @@ export default function LoginPage() {
         router.push("/dashboard");
       }
     } else {
+      if (inviteCode.toLowerCase() !== "smartsiv") {
+        setError("Invalid invite code. Contact the admin for access.");
+        setLoading(false);
+        return;
+      }
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) {
         setError(error.message);
@@ -134,11 +140,11 @@ export default function LoginPage() {
           <span className="text-2xl font-bold tracking-tight text-foreground">BenefitTracker</span>
         </div>
         <p className="text-sm text-muted-foreground mb-5 text-center max-w-xs">
-          Track and maximize every credit card perk, all in one place.
+          Track and maximize every credit card perk.
         </p>
 
         {/* Feature pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-6 max-w-md">
+        <div className="flex items-center justify-center gap-2 mb-6">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card/60 backdrop-blur border border-border/40 text-xs text-muted-foreground">
             <svg className="w-3.5 h-3.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -211,6 +217,23 @@ export default function LoginPage() {
                       className="w-full px-4 py-2.5 rounded-lg border border-border bg-background/80 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
                     />
                   </div>
+
+                  {tab === "signup" && (
+                    <div>
+                      <label htmlFor="inviteCode" className="block text-sm font-medium text-foreground mb-1.5">
+                        Invite Code
+                      </label>
+                      <input
+                        id="inviteCode"
+                        type="text"
+                        required
+                        value={inviteCode}
+                        onChange={(e) => setInviteCode(e.target.value)}
+                        placeholder="Enter your invite code"
+                        className="w-full px-4 py-2.5 rounded-lg border border-border bg-background/80 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
+                      />
+                    </div>
+                  )}
 
                   {error && (
                     <div className="bg-destructive/10 text-destructive text-sm px-4 py-2.5 rounded-lg">
