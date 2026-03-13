@@ -15,7 +15,8 @@ CREATE TABLE dim_all_cards (
   image_url  TEXT,
   card_points_multipliers TEXT,
   card_badge_acronym TEXT,
-  card_badge_color TEXT
+  card_badge_color TEXT,
+  card_annual_fee NUMERIC
 );
 
 -- 3. card_benefits — benefits per card

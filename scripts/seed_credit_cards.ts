@@ -27,6 +27,7 @@ interface CardInput {
   card_points_multipliers: string;
   card_badge_acronym: string;
   card_badge_color: string;
+  card_annual_fee: number;
   benefits: BenefitInput[];
 }
 
@@ -39,6 +40,7 @@ const cards: CardInput[] = [
     card_points_multipliers: "5X Flights (direct or Amex Travel) · 5X Hotels (Amex Travel)",
     card_badge_acronym: "AP",
     card_badge_color: "#64748b",
+    card_annual_fee: 895,
     benefits: [
       {
         benefit_id: "b0000000-0001-4000-8000-000000000001",
@@ -104,26 +106,81 @@ const cards: CardInput[] = [
     card_points_multipliers: "10X Hotels & Cars (Chase Travel) · 10X Chase Dining · 5X Flights (Chase Travel) · 3X Dining · 3X Travel",
     card_badge_acronym: "CSR",
     card_badge_color: "#1e3a8a",
+    card_annual_fee: 795,
     benefits: [
-      {
-        benefit_id: "b0000000-0002-4000-8000-000000000001",
-        benefit_description: "$300 Travel Credit",
-        benefit_category: "Travel",
-        benefit_type: "credit",
-        value: 300,
-        frequency: "yearly",
-        benefit_notes: "Auto-applied to broad travel purchases.",
-      },
-      {
-        benefit_id: "b0000000-0002-4000-8000-000000000002",
-        benefit_description: "$15 Instacart Credit",
-        benefit_category: "Shopping",
-        benefit_type: "credit",
-        value: 15,
-        frequency: "monthly",
-        benefit_notes: "Total $180 annually.",
-      },
-    ],
+        {
+          benefit_id: "b0000000-0002-4000-8000-000000000001",
+          benefit_description: "$300 Travel Credit",
+          benefit_category: "Travel",
+          benefit_type: "credit",
+          value: 300,
+          frequency: "yearly",
+          benefit_notes: "Auto-applied to broad travel purchases.",
+        },
+        {
+          benefit_id: "b0000000-0002-4000-8000-000000000002",
+          benefit_description: "$5 DoorDash Restaurant Credit",
+          benefit_category: "Dining",
+          benefit_type: "credit",
+          value: 5,
+          frequency: "monthly",
+          benefit_notes: "Total $60 annually.",
+        },
+        {
+            benefit_id: "b0000000-0002-4000-8000-000000000003",
+            benefit_description: "$20 DoorDash Non-Restaurant Credit",
+            benefit_category: "Shopping",
+            benefit_type: "credit",
+            value: 20,
+            frequency: "monthly",
+            benefit_notes: "Total $240 annually.",
+          },
+        {
+          benefit_id: "b0000000-0002-4000-8000-000000000004",
+          benefit_description: "$10 Lyft Credit",
+          benefit_category: "Travel",
+          benefit_type: "credit",
+          value: 10,
+          frequency: "monthly",
+          benefit_notes: "Total $120 annually.",
+        },
+        {
+          benefit_id: "b0000000-0002-4000-8000-000000000005",
+          benefit_description: "$150 Dining Credit",
+          benefit_category: "Dining",
+          benefit_type: "credit",
+          value: 150,
+          frequency: "half-yearly",
+          benefit_notes: "Total $300 annually for Sapphire Reserve Exclusive Tables.",
+        },
+        {
+          benefit_id: "b0000000-0002-4000-8000-000000000006",
+          benefit_description: "$250 'The Edit' Hotel Credit",
+          benefit_category: "Travel",
+          benefit_type: "credit",
+          value: 250,
+          frequency: "half-yearly",
+          benefit_notes: "Total $500 annually for bookings via 'The Edit by Chase Travel'.",
+        },
+        {
+          benefit_id: "b0000000-0002-4000-8000-000000000007",
+          benefit_description: "$150 StubHub Credit",
+          benefit_category: "Entertainment",
+          benefit_type: "credit",
+          value: 150,
+          frequency: "half-yearly",
+          benefit_notes: "Total $300 annually.",
+        },
+        {
+          benefit_id: "b0000000-0002-4000-8000-000000000008",
+          benefit_description: "$250 Select Hotel Credit",
+          benefit_category: "Travel",
+          benefit_type: "free_night",
+          value: 250,
+          frequency: "yearly",
+          benefit_notes: "One-time credit available through 12/31/26 for select hotel partners.",
+        },
+      ],
   },
   {
     card_id: "a1b2c3d4-0003-4000-8000-000000000003",
@@ -133,6 +190,7 @@ const cards: CardInput[] = [
     card_points_multipliers: "5X Travel (Chase Travel) · 3X Dining · 3X Online grocery · 3X Streaming · 2X Travel",
     card_badge_acronym: "CSP",
     card_badge_color: "#2563eb",
+    card_annual_fee: 95,
     benefits: [
       {
         benefit_id: "b0000000-0003-4000-8000-000000000001",
@@ -153,6 +211,7 @@ const cards: CardInput[] = [
     card_points_multipliers: "Up to 26X IHG · 5X Travel, dining & gas",
     card_badge_acronym: "IHG",
     card_badge_color: "#15803d",
+    card_annual_fee: 99,
     benefits: [
       {
         benefit_id: "b0000000-0004-4000-8000-000000000001",
@@ -173,6 +232,7 @@ const cards: CardInput[] = [
     card_points_multipliers: "Up to 17X Marriott · 3X Gas, groceries & dining (on first $6k/yr) · 2X Other Travel",
     card_badge_acronym: "MAR",
     card_badge_color: "#991b1b",
+    card_annual_fee: 95,
     benefits: [
       {
         benefit_id: "b0000000-0005-4000-8000-000000000001",
@@ -193,6 +253,7 @@ const cards: CardInput[] = [
     card_points_multipliers: "14X Hilton · 7X Flights, car rentals & U.S. restaurants",
     card_badge_acronym: "HLT",
     card_badge_color: "#5b21b6",
+    card_annual_fee: 550,
     benefits: [
       {
         benefit_id: "b0000000-0007-4000-8000-000000000001",
@@ -231,6 +292,7 @@ const cards: CardInput[] = [
     card_points_multipliers: "Up to 9X Hyatt · 2X Dining, flights, local transit & gyms",
     card_badge_acronym: "WoH",
     card_badge_color: "#1a56db",
+    card_annual_fee: 95,
     benefits: [
       {
         benefit_id: "b0000000-0006-4000-8000-000000000001",

@@ -44,4 +44,5 @@ export interface Card {
   card_points_multipliers?: string | null;
   card_badge_acronym?: string | null;
   card_badge_color?: string | null;
+  card_annual_fee?: number | null;
 }
