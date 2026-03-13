@@ -3,6 +3,7 @@ import Image from "next/image";
 const ISSUER_LOGOS: Record<string, string> = {
   "American Express": "/amex.png",
   "Chase": "/chase.png",
+  "HSBC": "/hsbc.png",
 };
 
 interface CardBadgeProps {
