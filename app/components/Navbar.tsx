@@ -38,10 +38,17 @@ export default function Navbar() {
   };
 
   const linkClass = (path: string) =>
-    `px-3 py-2 rounded-lg text-sm font-medium transition-colors text-center min-w-[5.5rem] ${
+    `relative px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-center min-w-[5.5rem] ${
       pathname === path
-        ? "bg-primary text-primary-foreground"
+        ? "text-primary"
         : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+    }`;
+
+  const underlineClass = (path: string) =>
+    `absolute bottom-0 left-1/2 h-0.5 bg-primary rounded-full transition-all duration-200 ${
+      pathname === path
+        ? "w-2/3 -translate-x-1/2"
+        : "w-0 -translate-x-1/2"
     }`;
 
   return (
@@ -55,15 +62,19 @@ export default function Navbar() {
             </Link>
             <Link href="/dashboard" className={linkClass("/dashboard")}>
               Cards
+              <span className={underlineClass("/dashboard")} />
             </Link>
             <Link href="/credit-benefits" className={linkClass("/credit-benefits")}>
               Credits
+              <span className={underlineClass("/credit-benefits")} />
             </Link>
             <Link href="/free-nights" className={linkClass("/free-nights")}>
               Free Nights
+              <span className={underlineClass("/free-nights")} />
             </Link>
             <Link href="/annual-fees" className={linkClass("/annual-fees")}>
               Annual Fees
+              <span className={underlineClass("/annual-fees")} />
             </Link>
           </div>
 

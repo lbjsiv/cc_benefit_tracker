@@ -197,6 +197,8 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
               {n.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
               {" · "}
               {daysLeft} day{daysLeft !== 1 ? "s" : ""} till end of month
+              {" · "}
+              That credit isn&apos;t going to redeem itself.
             </p>
           </div>
         );

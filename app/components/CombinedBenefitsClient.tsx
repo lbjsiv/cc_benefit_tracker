@@ -146,54 +146,57 @@ function AvailableBenefitCard({
 
   return (
     <div className="bg-card border border-border rounded-2xl p-4 flex items-center justify-between gap-4">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2 flex-wrap mb-1">
-          {showCardBadge && (
-            <CardBadge cardName={benefit.card_name ?? ""} acronym={benefit.card_badge_acronym} color={benefit.card_badge_color} issuer={benefit.card_issuer} size="sm" />
-          )}
-          <CategoryBadge category={benefit.benefit_category} />
-          <span className="text-xs text-muted-foreground">Valid for {benefit.periodLabel}</span>
-        </div>
-        <p className="font-medium text-sm">
-          {benefit.benefit_type === "free_night" ? (
-            <span className="text-foreground">{benefit.benefit_description}</span>
-          ) : (
-            <>
-              <span className="text-success font-bold">${Number(benefit.value).toLocaleString()}</span>
-              <span className="text-foreground">{" "}{benefit.benefit_description.replace(/^\$[\d,]+\s*/, "")}</span>
-            </>
-          )}
-        </p>
-        {benefit.benefit_notes && (
-          <p className="text-xs text-muted-foreground mt-0.5">{benefit.benefit_notes}</p>
+      <div className="flex items-center gap-3 min-w-0">
+        {showCardBadge && (
+          <CardBadge cardName={benefit.card_name ?? ""} acronym={benefit.card_badge_acronym} color={benefit.card_badge_color} issuer={benefit.card_issuer} size="sm" />
         )}
-        {benefit.benefit_type === "free_night" && (
-          <div className="mt-1.5 flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground">Expires:</span>
-            {isEditing ? (
-              <input
-                type="date"
-                defaultValue={benefit.expiration_date ?? ""}
-                autoFocus
-                className="bg-background border border-border rounded px-2 py-0.5 text-xs text-foreground"
-                onBlur={(e) => onSaveExpiration(benefit, e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") onSaveExpiration(benefit, (e.target as HTMLInputElement).value);
-                  else if (e.key === "Escape") onSetEditingExpiration(null);
-                }}
-              />
-            ) : (
-              <button
-                onClick={() => onSetEditingExpiration(editKey)}
-                className="text-foreground hover:text-primary transition-colors underline decoration-dashed underline-offset-2"
-              >
-                {benefit.expiration_date
-                  ? new Date(benefit.expiration_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-                  : "Add Date"}
-              </button>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <CategoryBadge category={benefit.benefit_category} />
+            <span className="text-xs text-muted-foreground">Valid for {benefit.periodLabel}</span>
+            {benefit.benefit_type === "free_night" && (
+              <>
+                <span className="text-xs text-muted-foreground/40">|</span>
+                <span className="text-xs text-muted-foreground">Expires:</span>
+                {isEditing ? (
+                  <input
+                    type="date"
+                    defaultValue={benefit.expiration_date ?? ""}
+                    autoFocus
+                    className="bg-background border border-border rounded px-2 py-0.5 text-xs text-foreground"
+                    onBlur={(e) => onSaveExpiration(benefit, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") onSaveExpiration(benefit, (e.target as HTMLInputElement).value);
+                      else if (e.key === "Escape") onSetEditingExpiration(null);
+                    }}
+                  />
+                ) : (
+                  <button
+                    onClick={() => onSetEditingExpiration(editKey)}
+                    className="text-xs text-foreground hover:text-primary transition-colors underline decoration-dashed underline-offset-2"
+                  >
+                    {benefit.expiration_date
+                      ? new Date(benefit.expiration_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                      : "Add Date"}
+                  </button>
+                )}
+              </>
             )}
           </div>
-        )}
+          <p className="font-medium text-sm mt-0.5">
+            {benefit.benefit_type === "free_night" ? (
+              <span className="text-foreground">{benefit.benefit_description}</span>
+            ) : (
+              <>
+                <span className="text-success font-bold">${Number(benefit.value).toLocaleString()}</span>
+                <span className="text-foreground">{" "}{benefit.benefit_description.replace(/^\$[\d,]+\s*/, "")}</span>
+              </>
+            )}
+          </p>
+          {benefit.benefit_notes && (
+            <p className="text-xs text-muted-foreground mt-0.5">{benefit.benefit_notes}</p>
+          )}
+        </div>
       </div>
       <button
         onClick={() => onMarkAsUsed(benefit)}
@@ -222,28 +225,31 @@ function UsedBenefitCard({
 }) {
   return (
     <div className="bg-card border border-border rounded-2xl p-4">
-      <div className="flex items-center gap-2 flex-wrap mb-1">
+      <div className="flex items-center gap-3">
         {showCardBadge && (
           <CardBadge cardName={group.card_name ?? ""} acronym={group.card_badge_acronym} color={group.card_badge_color} issuer={group.card_issuer} size="sm" />
         )}
-        <CategoryBadge category={group.benefit_category} />
-        <span className="text-xs text-muted-foreground">
-          {group.usedCount}/{group.totalPeriods} used
-        </span>
-      </div>
-      <p className="font-medium text-foreground text-sm">{group.benefit_description}</p>
-      {group.benefit_notes && (
-        <p className="text-xs text-muted-foreground mt-0.5">{group.benefit_notes}</p>
-      )}
-
-      {group.benefit_type === "free_night" && group.periods.filter((p) => p.isUsed && p.expiration_date).map((period) => (
-        <div key={period.eligible_date} className="mt-2 flex items-center gap-2 text-xs">
-          <span className="text-muted-foreground">Expires:</span>
-          <span className="text-foreground">
-            {new Date(period.expiration_date! + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-          </span>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <CategoryBadge category={group.benefit_category} />
+            <span className="text-xs text-muted-foreground">
+              {group.usedCount}/{group.totalPeriods} used
+            </span>
+          </div>
+          <p className="font-medium text-foreground text-sm mt-0.5">{group.benefit_description}</p>
+          {group.benefit_notes && (
+            <p className="text-xs text-muted-foreground mt-0.5">{group.benefit_notes}</p>
+          )}
+          {group.benefit_type === "free_night" && group.periods.filter((p) => p.isUsed && p.expiration_date).map((period) => (
+            <div key={period.eligible_date} className="mt-1 flex items-center gap-2 text-xs">
+              <span className="text-muted-foreground">Expires:</span>
+              <span className="text-foreground">
+                {new Date(period.expiration_date! + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </span>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
 
       <PeriodDots
         periods={group.periods}
