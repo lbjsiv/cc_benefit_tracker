@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentPeriodEligibleDate, type Frequency, type BenefitType } from "@/lib/benefits";
+import { getNow, getCurrentPeriodEligibleDate, type Frequency, type BenefitType } from "@/lib/benefits";
 import DashboardClient from "./DashboardClient";
 
 export default async function DashboardPage() {
@@ -33,15 +33,40 @@ export default async function DashboardPage() {
     benefits = (data ?? []) as typeof benefits;
   }
 
-  const { data: usedBenefits } = await supabase
-    .from("user_used_benefits")
-    .select("benefit_id, eligible_date")
-    .eq("user_id", user.id)
-    .eq("is_used", true);
+  const currentYear = getNow().getFullYear();
 
-  const usedSet = new Set(
-    (usedBenefits ?? []).map((u) => `${u.benefit_id}_${u.eligible_date}`)
+  // Fetch all user_used_benefits rows for the current year.
+  // Use select("*") so we don't reference is_used explicitly in the query
+  // (avoids failure if PostgREST schema cache hasn't picked up the column).
+  const { data: usedBenefitsData } = await supabase
+    .from("user_used_benefits")
+    .select("*")
+    .eq("user_id", user.id)
+    .gte("eligible_date", `${currentYear}-01-01`);
+
+  // Filter out notes-only rows (is_used=false). If is_used is undefined
+  // (column not in schema cache), treat the row as used.
+  interface UsedRow { benefit_id: string; card_id: string; eligible_date: string; is_used?: boolean }
+  const usedRows = ((usedBenefitsData ?? []) as UsedRow[]).filter((ub) => ub.is_used !== false);
+
+  // Set for current-period availability check
+  const usedCurrentPeriodSet = new Set(
+    usedRows.map((ub) => `${ub.benefit_id}_${ub.eligible_date}`)
   );
+
+  // Build a lookup: benefit_id → { value, type }
+  const benefitInfoMap = new Map<string, { value: number; type: BenefitType }>();
+  benefits.forEach((b) => {
+    benefitInfoMap.set(b.benefit_id, { value: Number(b.value), type: b.benefit_type });
+  });
+
+  // Group year-to-date usage rows by card
+  const usedYearByCard = new Map<string, UsedRow[]>();
+  usedRows.forEach((ub) => {
+    const arr = usedYearByCard.get(ub.card_id) ?? [];
+    arr.push(ub);
+    usedYearByCard.set(ub.card_id, arr);
+  });
 
   const cards = (trackedCards ?? []).map((tc) => {
     const card = tc.dim_all_cards as unknown as {
@@ -55,27 +80,37 @@ export default async function DashboardPage() {
     };
 
     const cardBenefits = benefits.filter((b) => b.card_id === tc.card_id);
+
+    // Available = benefits NOT used in the CURRENT period
     let availableCount = 0;
     let availableValue = 0;
     let availableFreeNights = 0;
-    let usedCreditsValue = 0;
-    let usedFreeNights = 0;
 
     cardBenefits.forEach((b) => {
       const eligibleDate = getCurrentPeriodEligibleDate(b.frequency);
       const key = `${b.benefit_id}_${eligibleDate}`;
-      if (usedSet.has(key)) {
-        if (b.benefit_type === "free_night") {
-          usedFreeNights++;
-        } else {
-          usedCreditsValue += Number(b.value);
-        }
-      } else {
+      if (!usedCurrentPeriodSet.has(key)) {
         availableCount++;
         if (b.benefit_type === "free_night") {
           availableFreeNights++;
         } else {
           availableValue += Number(b.value);
+        }
+      }
+    });
+
+    // Used = ALL usage across the year (not just current period)
+    let usedCreditsValue = 0;
+    let usedFreeNights = 0;
+
+    const cardUsedRows = usedYearByCard.get(tc.card_id) ?? [];
+    cardUsedRows.forEach((ur) => {
+      const info = benefitInfoMap.get(ur.benefit_id);
+      if (info) {
+        if (info.type === "free_night") {
+          usedFreeNights++;
+        } else {
+          usedCreditsValue += info.value;
         }
       }
     });
