@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { getNow, getCurrentPeriodEligibleDate, generateYearPeriods, type PeriodDot, type Frequency } from "@/lib/benefits";
+import { useBenefitActions } from "@/lib/useBenefitActions";
 import type { AvailableBenefit, UsedBenefitGroup, Card } from "@/lib/types";
 import CardBadge from "@/app/components/CardBadge";
 import CategoryBadge from "@/app/components/CategoryBadge";
@@ -18,211 +15,19 @@ interface Props {
 }
 
 export default function BenefitDetailClient({ card, userId, availableBenefits, usedBenefitGroups }: Props) {
-  const router = useRouter();
-  const supabase = createClient();
-  const [available, setAvailable] = useState(availableBenefits);
-  const [groups, setGroups] = useState(usedBenefitGroups);
-  const [actionInProgress, setActionInProgress] = useState<string | null>(null);
-
-  const now = getNow();
-  const currentYear = now.getFullYear();
-
-  const markAsUsed = async (benefit: AvailableBenefit) => {
-    setActionInProgress(benefit.benefit_id);
-
-    setAvailable((prev) => prev.filter((b) => b.benefit_id !== benefit.benefit_id));
-
-    setGroups((prev) => {
-      const existing = prev.find((g) => g.benefit_id === benefit.benefit_id);
-      if (existing) {
-        return prev.map((g) =>
-          g.benefit_id === benefit.benefit_id
-            ? {
-                ...g,
-                usedCount: g.usedCount + 1,
-                periods: g.periods.map((p) =>
-                  p.eligible_date === benefit.eligibleDate
-                    ? { ...p, isUsed: true, used_benefit_id: crypto.randomUUID(), used_at: new Date().toISOString(), canUndo: true }
-                    : p
-                ),
-              }
-            : g
-        );
-      }
-      const freq = benefit.frequency as Frequency;
-      const periods = generateYearPeriods(freq, currentYear).map((p) => ({
-        ...p,
-        isUsed: p.eligible_date === benefit.eligibleDate,
-        used_benefit_id: p.eligible_date === benefit.eligibleDate ? crypto.randomUUID() : undefined,
-        used_at: p.eligible_date === benefit.eligibleDate ? new Date().toISOString() : undefined,
-        canUndo: p.eligible_date === benefit.eligibleDate,
-      }));
-      return [
-        ...prev,
-        {
-          benefit_id: benefit.benefit_id,
-          card_id: benefit.card_id,
-          benefit_description: benefit.benefit_description,
-          benefit_category: benefit.benefit_category,
-          benefit_type: benefit.benefit_type,
-          value: benefit.value,
-          frequency: benefit.frequency,
-          benefit_notes: benefit.benefit_notes,
-          usedCount: 1,
-          totalPeriods: periods.length,
-          periods,
-        },
-      ];
-    });
-
-    const { error } = await supabase.from("user_used_benefits").insert({
-      user_id: userId,
-      benefit_id: benefit.benefit_id,
-      card_id: benefit.card_id,
-      eligible_date: benefit.eligibleDate,
-    });
-
-    if (error) {
-      setAvailable((prev) => [...prev, benefit]);
-      setGroups((prev) =>
-        prev.map((g) =>
-          g.benefit_id === benefit.benefit_id
-            ? {
-                ...g,
-                usedCount: g.usedCount - 1,
-                periods: g.periods.map((p) =>
-                  p.eligible_date === benefit.eligibleDate
-                    ? { ...p, isUsed: false, used_benefit_id: undefined, used_at: undefined, canUndo: false }
-                    : p
-                ),
-              }
-            : g
-        )
-      );
-    }
-
-    setActionInProgress(null);
-    router.refresh();
-  };
-
-  const markPeriodUsed = async (group: UsedBenefitGroup, period: PeriodDot) => {
-    const tempId = crypto.randomUUID();
-    setActionInProgress(tempId);
-
-    setGroups((prev) =>
-      prev.map((g) =>
-        g.benefit_id === group.benefit_id
-          ? {
-              ...g,
-              usedCount: g.usedCount + 1,
-              periods: g.periods.map((p) =>
-                p.eligible_date === period.eligible_date
-                  ? { ...p, isUsed: true, used_benefit_id: tempId, used_at: new Date().toISOString(), canUndo: true }
-                  : p
-              ),
-            }
-          : g
-      )
-    );
-
-    setAvailable((prev) =>
-      prev.filter((a) => !(a.benefit_id === group.benefit_id && a.eligibleDate === period.eligible_date))
-    );
-
-    const { error } = await supabase.from("user_used_benefits").insert({
-      user_id: userId,
-      benefit_id: group.benefit_id,
-      card_id: group.card_id,
-      eligible_date: period.eligible_date,
-    });
-
-    if (error) {
-      setGroups((prev) =>
-        prev.map((g) =>
-          g.benefit_id === group.benefit_id
-            ? {
-                ...g,
-                usedCount: g.usedCount - 1,
-                periods: g.periods.map((p) =>
-                  p.eligible_date === period.eligible_date
-                    ? { ...p, isUsed: false, used_benefit_id: undefined, used_at: undefined, canUndo: false }
-                    : p
-                ),
-              }
-            : g
-        )
-      );
-    }
-
-    setActionInProgress(null);
-    router.refresh();
-  };
-
-  const undoPeriod = async (group: UsedBenefitGroup, period: PeriodDot) => {
-    if (!period.used_benefit_id) return;
-    setActionInProgress(period.used_benefit_id);
-
-    setGroups((prev) =>
-      prev.map((g) =>
-        g.benefit_id === group.benefit_id
-          ? {
-              ...g,
-              usedCount: g.usedCount - 1,
-              periods: g.periods.map((p) =>
-                p.eligible_date === period.eligible_date
-                  ? { ...p, isUsed: false, used_benefit_id: undefined, used_at: undefined, canUndo: false }
-                  : p
-              ),
-            }
-          : g
-      )
-    );
-
-    const isCurrentPeriod = period.eligible_date === getCurrentPeriodEligibleDate(group.frequency as Frequency);
-    if (isCurrentPeriod) {
-      const restored: AvailableBenefit = {
-        benefit_id: group.benefit_id,
-        card_id: group.card_id,
-        benefit_description: group.benefit_description,
-        benefit_category: group.benefit_category,
-        benefit_type: group.benefit_type,
-        value: group.value,
-        frequency: group.frequency,
-        benefit_notes: group.benefit_notes,
-        eligibleDate: period.eligible_date,
-        periodLabel: period.label,
-      };
-      setAvailable((prev) => [...prev, restored]);
-    }
-
-    const { error } = await supabase
-      .from("user_used_benefits")
-      .delete()
-      .eq("benefit_id", group.benefit_id)
-      .eq("eligible_date", period.eligible_date);
-
-    if (error) {
-      setGroups((prev) =>
-        prev.map((g) =>
-          g.benefit_id === group.benefit_id
-            ? {
-                ...g,
-                usedCount: g.usedCount + 1,
-                periods: g.periods.map((p) =>
-                  p.eligible_date === period.eligible_date ? period : p
-                ),
-              }
-            : g
-        )
-      );
-      if (isCurrentPeriod) {
-        setAvailable((prev) => prev.filter((a) => !(a.benefit_id === group.benefit_id && a.eligibleDate === period.eligible_date)));
-      }
-    }
-
-    setActionInProgress(null);
-    router.refresh();
-  };
+  const {
+    available,
+    groups,
+    actionInProgress,
+    editingExpiration,
+    setEditingExpiration,
+    now,
+    currentYear,
+    saveExpiration,
+    markAsUsed,
+    markPeriodUsed,
+    undoPeriod,
+  } = useBenefitActions(userId, availableBenefits, usedBenefitGroups);
 
   const activeGroups = groups.filter((g) => g.usedCount > 0);
   const creditGroups = activeGroups.filter((g) => g.benefit_type === "credit");
@@ -241,7 +46,7 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
           ← Back to My Cards
         </Link>
         <div className="flex items-center gap-4">
-          <CardBadge cardName={card.card_name} acronym={card.card_badge_acronym} color={card.card_badge_color} size="lg" />
+          <CardBadge cardName={card.card_name} acronym={card.card_badge_acronym} color={card.card_badge_color} issuer={card.card_issuer} size="lg" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">{card.card_name}</h1>
             {card.card_points_multipliers && (
@@ -300,6 +105,37 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
                     {benefit.benefit_notes && (
                       <p className="text-xs text-muted-foreground mt-0.5">{benefit.benefit_notes}</p>
                     )}
+                    {benefit.benefit_type === "free_night" && (() => {
+                      const editKey = `${benefit.benefit_id}_${benefit.eligibleDate}`;
+                      const isEditing = editingExpiration === editKey;
+                      return (
+                        <div className="mt-1.5 flex items-center gap-2 text-xs">
+                          <span className="text-muted-foreground">Expires:</span>
+                          {isEditing ? (
+                            <input
+                              type="date"
+                              defaultValue={benefit.expiration_date ?? ""}
+                              autoFocus
+                              className="bg-background border border-border rounded px-2 py-0.5 text-xs text-foreground"
+                              onBlur={(e) => saveExpiration(benefit, e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") saveExpiration(benefit, (e.target as HTMLInputElement).value);
+                                else if (e.key === "Escape") setEditingExpiration(null);
+                              }}
+                            />
+                          ) : (
+                            <button
+                              onClick={() => setEditingExpiration(editKey)}
+                              className="text-foreground hover:text-primary transition-colors underline decoration-dashed underline-offset-2"
+                            >
+                              {benefit.expiration_date
+                                ? new Date(benefit.expiration_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                                : "Add Date"}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                   <button
                     onClick={() => markAsUsed(benefit)}
@@ -351,6 +187,15 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
                   {group.benefit_notes && (
                     <p className="text-xs text-muted-foreground mt-0.5">{group.benefit_notes}</p>
                   )}
+
+                  {group.benefit_type === "free_night" && group.periods.filter((p) => p.isUsed && p.expiration_date).map((period) => (
+                    <div key={period.eligible_date} className="mt-2 flex items-center gap-2 text-xs">
+                      <span className="text-muted-foreground">Expires:</span>
+                      <span className="text-foreground">
+                        {new Date(period.expiration_date! + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </span>
+                    </div>
+                  ))}
 
                   <PeriodDots
                     periods={group.periods}

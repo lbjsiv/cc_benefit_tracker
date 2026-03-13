@@ -1,7 +1,15 @@
+import Image from "next/image";
+
+const ISSUER_LOGOS: Record<string, string> = {
+  "American Express": "/amex.png",
+  "Chase": "/chase.png",
+};
+
 interface CardBadgeProps {
   cardName: string;
   acronym?: string | null;
   color?: string | null;
+  issuer?: string;
   size?: "sm" | "lg";
 }
 
@@ -36,25 +44,43 @@ function hslString(h: number, s: number, l: number): string {
   return `hsl(${((h % 360) + 360) % 360}, ${s}%, ${l}%)`;
 }
 
-export default function CardBadge({ cardName, acronym, color, size = "sm" }: CardBadgeProps) {
+export default function CardBadge({ cardName, acronym, color, issuer, size = "sm" }: CardBadgeProps) {
   const displayAcronym = acronym || getFallbackAcronym(cardName);
   const bgColor = color || "#737373";
   const isLg = size === "lg";
   const dim = isLg ? "w-14 h-14" : "w-12 h-12";
   const fontSize = isLg ? "text-sm" : "text-xs";
+  const logoSrc = issuer ? ISSUER_LOGOS[issuer] : undefined;
+  const logoDim = isLg ? 20 : 16;
 
   const [h, s, l] = hexToHsl(bgColor);
   const from = hslString(h - 25, Math.min(s + 10, 100), Math.min(l + 8, 65));
   const to = hslString(h + 25, Math.min(s + 10, 100), Math.min(l + 8, 65));
 
   return (
-    <div
-      className={`rounded-full flex items-center justify-center shrink-0 ${dim}`}
-      style={{ background: `linear-gradient(135deg, ${from}, ${to})` }}
-    >
-      <span className={`font-semibold text-white tracking-wide ${fontSize}`}>
-        {displayAcronym}
-      </span>
+    <div className="relative shrink-0">
+      <div
+        className={`rounded-full flex items-center justify-center ${dim}`}
+        style={{ background: `linear-gradient(135deg, ${from}, ${to})` }}
+      >
+        <span className={`font-semibold text-white tracking-wide ${fontSize}`}>
+          {displayAcronym}
+        </span>
+      </div>
+      {logoSrc && (
+        <div
+          className="absolute -bottom-0.5 -right-0.5 rounded-full bg-white shadow-sm border border-border flex items-center justify-center"
+          style={{ width: logoDim + 4, height: logoDim + 4 }}
+        >
+          <Image
+            src={logoSrc}
+            alt={issuer ?? ""}
+            width={logoDim}
+            height={logoDim}
+            className="rounded-full object-contain"
+          />
+        </div>
+      )}
     </div>
   );
 }

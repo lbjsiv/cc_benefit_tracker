@@ -37,17 +37,19 @@ CREATE TABLE user_tracked_cards (
   PRIMARY KEY (user_id, card_id)
 );
 
--- 5. user_used_benefits — log of benefit redemptions
+-- 5. user_used_benefits — user interactions with benefits (notes + redemptions)
 CREATE TABLE user_used_benefits (
   used_benefit_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   benefit_id      UUID NOT NULL REFERENCES card_benefits(benefit_id) ON DELETE CASCADE,
   card_id         UUID NOT NULL REFERENCES dim_all_cards(card_id) ON DELETE CASCADE,
   eligible_date   DATE NOT NULL,
-  used_at         TIMESTAMPTZ NOT NULL DEFAULT now()
+  is_used         BOOLEAN NOT NULL DEFAULT true,
+  used_at         TIMESTAMPTZ,
+  expiration_date TEXT
 );
 
--- Unique constraint: one redemption per user/benefit/period
+-- Unique constraint: one record per user/benefit/period
 CREATE UNIQUE INDEX idx_unique_user_benefit_period
   ON user_used_benefits (user_id, benefit_id, eligible_date);
 

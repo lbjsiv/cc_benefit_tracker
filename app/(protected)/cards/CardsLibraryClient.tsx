@@ -91,7 +91,7 @@ export default function CardsLibraryClient({ cards, userId }: Props) {
               }`}
             >
               <div className="flex items-center gap-4 mb-4">
-                <CardBadge cardName={card.card_name} acronym={card.card_badge_acronym} color={card.card_badge_color} />
+                <CardBadge cardName={card.card_name} acronym={card.card_badge_acronym} color={card.card_badge_color} issuer={card.card_issuer} />
                 <div className="min-w-0">
                   <h3 className="font-semibold text-foreground truncate">{card.card_name}</h3>
                 </div>

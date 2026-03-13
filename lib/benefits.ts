@@ -65,6 +65,7 @@ export interface PeriodDot {
   isUsed: boolean;
   used_benefit_id?: string;
   used_at?: string;
+  expiration_date?: string | null;
   canUndo: boolean;
   isFuture: boolean;
 }

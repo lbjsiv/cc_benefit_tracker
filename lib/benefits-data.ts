@@ -36,6 +36,7 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
 
   interface CardInfo {
     card_name: string;
+    card_issuer: string;
     card_badge_acronym: string | null;
     card_badge_color: string | null;
   }
@@ -44,11 +45,13 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
     const card = tc.dim_all_cards as unknown as {
       card_id: string;
       card_name: string;
+      card_issuer: string;
       card_badge_acronym: string | null;
       card_badge_color: string | null;
     };
     cardInfoMap.set(card.card_id, {
       card_name: card.card_name,
+      card_issuer: card.card_issuer,
       card_badge_acronym: card.card_badge_acronym,
       card_badge_color: card.card_badge_color,
     });
@@ -70,15 +73,25 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
     .gte("eligible_date", `${currentYear}-01-01`);
 
   const benefitIds = new Set(benefits.map((b) => b.benefit_id));
-  const relevantUsed = (usedBenefitsData ?? []).filter((ub) => benefitIds.has(ub.benefit_id));
+  const relevantRows = (usedBenefitsData ?? []).filter((ub) => benefitIds.has(ub.benefit_id));
 
-  const usedMap = new Map<string, { used_benefit_id: string; eligible_date: string; used_at: string }>();
-  relevantUsed.forEach((ub) => {
-    usedMap.set(`${ub.benefit_id}_${ub.eligible_date}`, {
-      used_benefit_id: ub.used_benefit_id,
-      eligible_date: ub.eligible_date,
-      used_at: ub.used_at,
-    });
+  // Notes-only rows (is_used=false): carry expiration_date onto available benefits
+  const notesMap = new Map<string, { expiration_date: string | null }>();
+  // Actually-used rows (is_used=true)
+  const usedMap = new Map<string, { used_benefit_id: string; eligible_date: string; used_at: string; expiration_date: string | null }>();
+
+  relevantRows.forEach((ub) => {
+    const key = `${ub.benefit_id}_${ub.eligible_date}`;
+    if (ub.is_used !== false) {
+      usedMap.set(key, {
+        used_benefit_id: ub.used_benefit_id,
+        eligible_date: ub.eligible_date,
+        used_at: ub.used_at,
+        expiration_date: ub.expiration_date ?? null,
+      });
+    } else {
+      notesMap.set(key, { expiration_date: ub.expiration_date ?? null });
+    }
   });
 
   const availableBenefits = benefits
@@ -86,22 +99,25 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
       const eligibleDate = getCurrentPeriodEligibleDate(b.frequency);
       const key = `${b.benefit_id}_${eligibleDate}`;
       const info = cardInfoMap.get(b.card_id);
+      const notes = notesMap.get(key);
       return {
         ...b,
         card_name: info?.card_name ?? "",
+        card_issuer: info?.card_issuer ?? "",
         card_badge_acronym: info?.card_badge_acronym ?? null,
         card_badge_color: info?.card_badge_color ?? null,
         eligibleDate,
         periodLabel: getPeriodLabel(eligibleDate, b.frequency),
+        expiration_date: notes?.expiration_date ?? null,
         isUsed: usedMap.has(key),
       };
     })
     .filter((b) => !b.isUsed);
 
-  const usedByBenefitId = new Map<string, Array<{ used_benefit_id: string; eligible_date: string; used_at: string }>>();
-  relevantUsed.forEach((ub) => {
+  const usedByBenefitId = new Map<string, Array<{ used_benefit_id: string; eligible_date: string; used_at: string; expiration_date: string | null }>>();
+  relevantRows.filter((ub) => ub.is_used !== false).forEach((ub) => {
     const arr = usedByBenefitId.get(ub.benefit_id) ?? [];
-    arr.push({ used_benefit_id: ub.used_benefit_id, eligible_date: ub.eligible_date, used_at: ub.used_at });
+    arr.push({ used_benefit_id: ub.used_benefit_id, eligible_date: ub.eligible_date, used_at: ub.used_at, expiration_date: ub.expiration_date ?? null });
     usedByBenefitId.set(ub.benefit_id, arr);
   });
 
@@ -116,6 +132,7 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
           isUsed: !!usage,
           used_benefit_id: usage?.used_benefit_id,
           used_at: usage?.used_at,
+          expiration_date: usage?.expiration_date ?? null,
           canUndo: !!usage && !p.isFuture,
         };
       });
@@ -124,6 +141,7 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
         benefit_id: b.benefit_id,
         card_id: b.card_id,
         card_name: info?.card_name ?? "",
+        card_issuer: info?.card_issuer ?? "",
         card_badge_acronym: info?.card_badge_acronym ?? null,
         card_badge_color: info?.card_badge_color ?? null,
         benefit_description: b.benefit_description,

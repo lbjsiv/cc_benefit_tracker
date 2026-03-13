@@ -147,7 +147,7 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
             ) : null}
             <Link href={`/cards/${card.card_id}`} className="block px-4 py-4">
               <div className="flex items-center gap-4">
-                <CardBadge cardName={card.card_name} acronym={card.card_badge_acronym} color={card.card_badge_color} />
+                <CardBadge cardName={card.card_name} acronym={card.card_badge_acronym} color={card.card_badge_color} issuer={card.card_issuer} />
                 <div className="min-w-0 pr-6">
                   <h3 className="font-semibold text-foreground truncate">{card.card_name}</h3>
                   {card.card_points_multipliers && (

@@ -36,7 +36,8 @@ export default async function DashboardPage() {
   const { data: usedBenefits } = await supabase
     .from("user_used_benefits")
     .select("benefit_id, eligible_date")
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .eq("is_used", true);
 
   const usedSet = new Set(
     (usedBenefits ?? []).map((u) => `${u.benefit_id}_${u.eligible_date}`)

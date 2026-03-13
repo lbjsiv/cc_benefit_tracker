@@ -4,6 +4,7 @@ export interface AvailableBenefit {
   benefit_id: string;
   card_id: string;
   card_name?: string;
+  card_issuer?: string;
   card_badge_acronym?: string | null;
   card_badge_color?: string | null;
   benefit_description: string;
@@ -14,12 +15,14 @@ export interface AvailableBenefit {
   benefit_notes?: string | null;
   eligibleDate: string;
   periodLabel: string;
+  expiration_date?: string | null;
 }
 
 export interface UsedBenefitGroup {
   benefit_id: string;
   card_id: string;
   card_name?: string;
+  card_issuer?: string;
   card_badge_acronym?: string | null;
   card_badge_color?: string | null;
   benefit_description: string;

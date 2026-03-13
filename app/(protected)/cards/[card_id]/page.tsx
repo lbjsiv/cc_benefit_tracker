@@ -55,14 +55,21 @@ export default async function CardDetailPage({ params }: Props) {
     .eq("card_id", card_id)
     .gte("eligible_date", `${currentYear}-01-01`);
 
-  const usedMap = new Map<string, { used_benefit_id: string; eligible_date: string; used_at: string }>();
+  const notesMap = new Map<string, { expiration_date: string | null }>();
+  const usedMap = new Map<string, { used_benefit_id: string; eligible_date: string; used_at: string; expiration_date: string | null }>();
+
   (usedBenefits ?? []).forEach((ub) => {
     const key = `${ub.benefit_id}_${ub.eligible_date}`;
-    usedMap.set(key, {
-      used_benefit_id: ub.used_benefit_id,
-      eligible_date: ub.eligible_date,
-      used_at: ub.used_at,
-    });
+    if (ub.is_used !== false) {
+      usedMap.set(key, {
+        used_benefit_id: ub.used_benefit_id,
+        eligible_date: ub.eligible_date,
+        used_at: ub.used_at,
+        expiration_date: ub.expiration_date ?? null,
+      });
+    } else {
+      notesMap.set(key, { expiration_date: ub.expiration_date ?? null });
+    }
   });
 
   const typedBenefits = (benefits ?? []) as Array<{
@@ -80,21 +87,23 @@ export default async function CardDetailPage({ params }: Props) {
     .map((b) => {
       const eligibleDate = getCurrentPeriodEligibleDate(b.frequency);
       const key = `${b.benefit_id}_${eligibleDate}`;
-      const isUsed = usedMap.has(key);
+      const notes = notesMap.get(key);
       return {
         ...b,
+        card_issuer: card.card_issuer,
         eligibleDate,
         periodLabel: getPeriodLabel(eligibleDate, b.frequency),
-        isUsed,
+        expiration_date: notes?.expiration_date ?? null,
+        isUsed: usedMap.has(key),
       };
     })
     .filter((b) => !b.isUsed);
 
   // Group used benefits by benefit_id for the period-dot view
-  const usedByBenefitId = new Map<string, Array<{ used_benefit_id: string; eligible_date: string; used_at: string }>>();
-  (usedBenefits ?? []).forEach((ub) => {
+  const usedByBenefitId = new Map<string, Array<{ used_benefit_id: string; eligible_date: string; used_at: string; expiration_date: string | null }>>();
+  (usedBenefits ?? []).filter((ub) => ub.is_used !== false).forEach((ub) => {
     const arr = usedByBenefitId.get(ub.benefit_id) ?? [];
-    arr.push({ used_benefit_id: ub.used_benefit_id, eligible_date: ub.eligible_date, used_at: ub.used_at });
+    arr.push({ used_benefit_id: ub.used_benefit_id, eligible_date: ub.eligible_date, used_at: ub.used_at, expiration_date: ub.expiration_date ?? null });
     usedByBenefitId.set(ub.benefit_id, arr);
   });
 
@@ -109,12 +118,14 @@ export default async function CardDetailPage({ params }: Props) {
           isUsed: !!usage,
           used_benefit_id: usage?.used_benefit_id,
           used_at: usage?.used_at,
+          expiration_date: usage?.expiration_date ?? null,
           canUndo: !!usage && !p.isFuture,
         };
       });
       return {
         benefit_id: b.benefit_id,
         card_id: b.card_id,
+        card_issuer: card.card_issuer,
         benefit_description: b.benefit_description,
         benefit_category: b.benefit_category,
         benefit_type: b.benefit_type,

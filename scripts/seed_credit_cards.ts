@@ -10,6 +10,7 @@ type Frequency = "monthly" | "quarterly" | "half-yearly" | "yearly";
 type BenefitType = "credit" | "free_night";
 
 interface BenefitInput {
+  benefit_id: string;
   benefit_description: string;
   benefit_category: string;
   benefit_type: BenefitType;
@@ -40,46 +41,43 @@ const cards: CardInput[] = [
     card_badge_color: "#64748b",
     benefits: [
       {
-        benefit_description: "$15 Uber Cash Monthly Credit",
+        benefit_id: "b0000000-0001-4000-8000-000000000001",
+        benefit_description: "$15 Uber Cash Credit",
         benefit_category: "Travel",
         benefit_type: "credit",
         value: 15,
         frequency: "monthly",
-        benefit_notes: "U.S. Uber/Uber Eats. $20 bonus in December.",
+        benefit_notes: "Total $200 annually, with a $20 bonus in December.",
       },
       {
+        benefit_id: "b0000000-0001-4000-8000-000000000002",
         benefit_description: "$25 Digital Entertainment Credit",
         benefit_category: "Entertainment",
         benefit_type: "credit",
         value: 25,
         frequency: "monthly",
-        benefit_notes: "Disney+, Hulu, ESPN+, Peacock, Paramount+, NYT, WSJ, YouTube.",
+        benefit_notes: "Disney+, Hulu, ESPN+, Peacock, Paramount+, NYT, WSJ, YouTube. Total $300 annually.",
       },
       {
+        benefit_id: "b0000000-0001-4000-8000-000000000003",
         benefit_description: "$50 Saks Fifth Avenue Credit",
         benefit_category: "Shopping",
         benefit_type: "credit",
         value: 50,
         frequency: "half-yearly",
-        benefit_notes: "",
+        benefit_notes: "Total $100 annually.",
       },
       {
-        benefit_description: "$100 Resy Dining Credit",
-        benefit_category: "Dining",
+        benefit_id: "b0000000-0001-4000-8000-000000000004",
+        benefit_description: "$300 Hotel Credit",
+        benefit_category: "Travel",
         benefit_type: "credit",
-        value: 100,
-        frequency: "quarterly",
-        benefit_notes: "Eligible purchases at U.S. Resy restaurants.",
+        value: 300,
+        frequency: "half-yearly",
+        benefit_notes: "Total $600 annually for prepaid FHR or The Hotel Collection bookings.",
       },
       {
-        benefit_description: "$75 lululemon Credit",
-        benefit_category: "Shopping",
-        benefit_type: "credit",
-        value: 75,
-        frequency: "quarterly",
-        benefit_notes: "Purchases at U.S. lululemon stores or online.",
-      },
-      {
+        benefit_id: "b0000000-0001-4000-8000-000000000005",
         benefit_description: "$200 Airline Fee Credit",
         benefit_category: "Travel",
         benefit_type: "credit",
@@ -88,14 +86,7 @@ const cards: CardInput[] = [
         benefit_notes: "Incidental fees on one selected airline.",
       },
       {
-        benefit_description: "$200 Hotel Credit",
-        benefit_category: "Travel",
-        benefit_type: "credit",
-        value: 200,
-        frequency: "yearly",
-        benefit_notes: "Prepaid FHR or The Hotel Collection bookings via Amex Travel.",
-      },
-      {
+        benefit_id: "b0000000-0001-4000-8000-000000000006",
         benefit_description: "$300 Equinox Credit",
         benefit_category: "Fitness",
         benefit_type: "credit",
@@ -115,7 +106,8 @@ const cards: CardInput[] = [
     card_badge_color: "#1e3a8a",
     benefits: [
       {
-        benefit_description: "$300 Annual Travel Credit",
+        benefit_id: "b0000000-0002-4000-8000-000000000001",
+        benefit_description: "$300 Travel Credit",
         benefit_category: "Travel",
         benefit_type: "credit",
         value: 300,
@@ -123,12 +115,13 @@ const cards: CardInput[] = [
         benefit_notes: "Auto-applied to broad travel purchases.",
       },
       {
-        benefit_description: "$15 Instacart Monthly Credit",
+        benefit_id: "b0000000-0002-4000-8000-000000000002",
+        benefit_description: "$15 Instacart Credit",
         benefit_category: "Shopping",
         benefit_type: "credit",
         value: 15,
         frequency: "monthly",
-        benefit_notes: "Statement credit for Instacart purchases.",
+        benefit_notes: "Total $180 annually.",
       },
     ],
   },
@@ -142,7 +135,8 @@ const cards: CardInput[] = [
     card_badge_color: "#2563eb",
     benefits: [
       {
-        benefit_description: "$50 Annual Hotel Credit",
+        benefit_id: "b0000000-0003-4000-8000-000000000001",
+        benefit_description: "$50 Hotel Credit",
         benefit_category: "Travel",
         benefit_type: "credit",
         value: 50,
@@ -161,12 +155,13 @@ const cards: CardInput[] = [
     card_badge_color: "#15803d",
     benefits: [
       {
+        benefit_id: "b0000000-0004-4000-8000-000000000001",
         benefit_description: "Free Night Certificate",
         benefit_category: "Hotel",
         benefit_type: "free_night",
         value: 0,
         frequency: "yearly",
-        benefit_notes: "Valid at IHG hotels for 40,000 points/night.",
+        benefit_notes: "Valid at IHG hotels up to 40,000 points/night.",
       },
     ],
   },
@@ -180,12 +175,13 @@ const cards: CardInput[] = [
     card_badge_color: "#991b1b",
     benefits: [
       {
+        benefit_id: "b0000000-0005-4000-8000-000000000001",
         benefit_description: "Free Night Award",
         benefit_category: "Hotel",
         benefit_type: "free_night",
         value: 0,
         frequency: "yearly",
-        benefit_notes: "Valid at Marriott properties for 35,000 points/night.",
+        benefit_notes: "Valid at Marriott properties up to 35,000 points/night.",
       },
     ],
   },
@@ -199,22 +195,25 @@ const cards: CardInput[] = [
     card_badge_color: "#5b21b6",
     benefits: [
       {
+        benefit_id: "b0000000-0007-4000-8000-000000000001",
         benefit_description: "$200 Hilton Resort Credit",
         benefit_category: "Travel",
         benefit_type: "credit",
         value: 200,
         frequency: "half-yearly",
-        benefit_notes: "$200 in statement credits semi-annually at participating Hilton Resorts.",
+        benefit_notes: "Total $400 annually.",
       },
       {
-        benefit_description: "$200 Flight Credit",
+        benefit_id: "b0000000-0007-4000-8000-000000000002",
+        benefit_description: "$50 Flight Credit",
         benefit_category: "Travel",
         benefit_type: "credit",
         value: 50,
         frequency: "quarterly",
-        benefit_notes: "$50 per quarter for flights booked with airlines or amextravel.com.",
+        benefit_notes: "Total $200 annually.",
       },
       {
+        benefit_id: "b0000000-0007-4000-8000-000000000003",
         benefit_description: "Annual Free Night Reward",
         benefit_category: "Hotel",
         benefit_type: "free_night",
@@ -234,12 +233,13 @@ const cards: CardInput[] = [
     card_badge_color: "#1a56db",
     benefits: [
       {
+        benefit_id: "b0000000-0006-4000-8000-000000000001",
         benefit_description: "Category 1-4 Hyatt Free Night",
         benefit_category: "Hotel",
         benefit_type: "free_night",
         value: 0,
         frequency: "yearly",
-        benefit_notes: "One free night at any Category 1-4 Hyatt hotel each anniversary year.",
+        benefit_notes: "One free night at any Category 1-4 Hyatt hotel.",
       },
     ],
   },
@@ -266,18 +266,46 @@ async function seed() {
     }))
   );
 
+  // Remove stale benefits BEFORE upserting so old rows with random IDs
+  // don't collide with new deterministic-ID rows on any unique constraints.
+  // ON DELETE CASCADE on user_used_benefits.benefit_id handles cleanup of usage records.
+  const seededBenefitIds = benefitRows.map((b) => b.benefit_id);
+  const seededCardIds = cards.map((c) => c.card_id);
+
+  const { data: existingBenefits } = await supabase
+    .from("card_benefits")
+    .select("benefit_id")
+    .in("card_id", seededCardIds);
+
+  const staleIds = (existingBenefits ?? [])
+    .map((b) => b.benefit_id)
+    .filter((id: string) => !seededBenefitIds.includes(id));
+
+  if (staleIds.length > 0) {
+    const { error: deleteError } = await supabase
+      .from("card_benefits")
+      .delete()
+      .in("benefit_id", staleIds);
+
+    if (deleteError) {
+      console.error("Error removing stale benefits:", deleteError);
+      process.exit(1);
+    }
+    console.log(`  ✓ Removed ${staleIds.length} stale benefit(s)`);
+  } else {
+    console.log("  ✓ No stale benefits to remove");
+  }
+
   const { error: benefitError } = await supabase
     .from("card_benefits")
-    .upsert(benefitRows, {
-      onConflict: "card_id,benefit_description",
-      ignoreDuplicates: false,
-    });
+    .upsert(benefitRows, { onConflict: "benefit_id" });
 
   if (benefitError) {
     console.error("Error seeding benefits:", benefitError);
     process.exit(1);
   }
   console.log(`  ✓ Upserted ${benefitRows.length} benefits`);
+
   console.log("Seed complete!");
 }
 
