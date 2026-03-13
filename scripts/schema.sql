@@ -71,3 +71,21 @@ CREATE POLICY "Users can access own tracked cards" ON user_tracked_cards
 -- user_used_benefits: users can only access their own rows
 CREATE POLICY "Users can access own used benefits" ON user_used_benefits
   FOR ALL USING (auth.uid() = user_id);
+
+-- 6. card_requests — user-submitted card requests
+CREATE TABLE card_requests (
+  request_id      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  request_details TEXT NOT NULL CHECK (char_length(request_details) <= 500),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE card_requests ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can insert their own requests"
+  ON card_requests FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can read their own requests"
+  ON card_requests FOR SELECT
+  USING (auth.uid() = user_id);

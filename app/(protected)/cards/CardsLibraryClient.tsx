@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import CardBadge from "@/app/components/CardBadge";
+import CardRequestModal from "@/app/components/CardRequestModal";
 
 interface Card {
   card_id: string;
@@ -28,6 +29,7 @@ export default function CardsLibraryClient({ cards, userId }: Props) {
   const [localTracked, setLocalTracked] = useState<Set<string>>(
     new Set(cards.filter((c) => c.isTracked).map((c) => c.card_id))
   );
+  const [showRequestModal, setShowRequestModal] = useState(false);
 
   const filteredCards = cards.filter(
     (card) =>
@@ -128,16 +130,20 @@ export default function CardsLibraryClient({ cards, userId }: Props) {
       )}
 
       <div className="mt-8 text-center py-6 border-t border-border">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-base font-bold text-muted-foreground">
           Cannot find the card you want?{" "}
-          <a
-            href="mailto:bsivlu@gmail.com?subject=Card%20Request%20-%20MyCCPerks&body=Hi%2C%0A%0AI%27d%20like%20to%20request%20the%20following%20card%20to%20be%20added%3A%0A%0ACard%20Name%3A%20%0AIssuer%3A%20%0A%0AThanks!"
+          <button
+            onClick={() => setShowRequestModal(true)}
             className="text-primary font-medium hover:underline"
           >
             Send us a request
-          </a>
+          </button>
         </p>
       </div>
+
+      {showRequestModal && (
+        <CardRequestModal userId={userId} onClose={() => setShowRequestModal(false)} />
+      )}
     </div>
   );
 }
