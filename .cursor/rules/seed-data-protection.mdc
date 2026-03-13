@@ -1,14 +1,16 @@
 ---
 description: Protects the seed data file from unauthorized changes
-globs: scripts/seed_credit_cards.ts
-alwaysApply: false
+alwaysApply: true
 ---
 
 # Seed Data Protection
 
 **DO NOT modify `scripts/seed_credit_cards.ts` without the owner's explicit confirmation.**
 
-Before making any changes to this file — additions, deletions, edits to card data, benefit data, IDs, or structure — you MUST:
+This rule applies even when the file is not open or the user did not mention it. During broader tasks (schema changes, audits, bug fixes, refactors), NEVER make incidental edits to this file.
 
-1. Describe the proposed change to the user
-2. Wait for explicit approval before proceeding
+Before making any changes to this file — additions, deletions, edits to card data, benefit values, IDs, descriptions, or structure — you MUST:
+
+1. Stop and describe the exact proposed change to the user
+2. Wait for explicit approval ("yes", "go ahead", etc.) before proceeding
+3. If the user has not mentioned this file, do NOT touch it
