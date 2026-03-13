@@ -44,7 +44,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) and (min-width: 640px) {
   :root {
     --background: #0f172a;
     --foreground: #f1f5f9;

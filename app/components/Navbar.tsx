@@ -33,6 +33,12 @@ export default function Navbar() {
         : "text-muted-foreground hover:text-foreground hover:bg-secondary"
     }`;
 
+  const now = getNow();
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysLeft = lastDay - now.getDate();
+  const dateStr = now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+  const daysLeftStr = `${daysLeft} day${daysLeft !== 1 ? "s" : ""} till end of month`;
+
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -54,12 +60,7 @@ export default function Navbar() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-xs text-muted-foreground hidden sm:inline">
-              {(() => {
-                const now = getNow();
-                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-                const daysLeft = lastDay - now.getDate();
-                return `${now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })} (${daysLeft} day${daysLeft !== 1 ? "s" : ""} till end of month)`;
-              })()}
+              {dateStr} ({daysLeftStr})
             </span>
             {email && (
               <span className="text-xs text-muted-foreground hidden sm:inline">{email}</span>
@@ -72,6 +73,11 @@ export default function Navbar() {
               {signingOut ? "Signing out…" : "Sign Out"}
             </button>
           </div>
+        </div>
+        <div className="sm:hidden pb-2 -mt-1 text-center">
+          <span className="text-[11px] text-muted-foreground/70">
+            {dateStr} &middot; {daysLeftStr}
+          </span>
         </div>
       </div>
     </nav>
