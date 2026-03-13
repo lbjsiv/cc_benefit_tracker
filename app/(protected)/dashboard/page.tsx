@@ -35,19 +35,14 @@ export default async function DashboardPage() {
 
   const currentYear = getNow().getFullYear();
 
-  // Fetch all user_used_benefits rows for the current year.
-  // Use select("*") so we don't reference is_used explicitly in the query
-  // (avoids failure if PostgREST schema cache hasn't picked up the column).
   const { data: usedBenefitsData } = await supabase
     .from("user_used_benefits")
     .select("*")
     .eq("user_id", user.id)
+    .eq("is_used", true)
     .gte("eligible_date", `${currentYear}-01-01`);
 
-  // Filter out notes-only rows (is_used=false). If is_used is undefined
-  // (column not in schema cache), treat the row as used.
-  interface UsedRow { benefit_id: string; card_id: string; eligible_date: string; is_used?: boolean }
-  const usedRows = ((usedBenefitsData ?? []) as UsedRow[]).filter((ub) => ub.is_used !== false);
+  const usedRows = usedBenefitsData ?? [];
 
   // Set for current-period availability check
   const usedCurrentPeriodSet = new Set(

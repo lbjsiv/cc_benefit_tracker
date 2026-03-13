@@ -89,3 +89,4 @@ CREATE POLICY "Users can insert their own requests"
 CREATE POLICY "Users can read their own requests"
   ON card_requests FOR SELECT
   USING (auth.uid() = user_id);
+

@@ -32,40 +32,22 @@ export function useBenefitActions(
     );
     setEditingExpiration(null);
 
-    const insertPayload: Record<string, unknown> = {
+    const { error } = await supabase.from("user_used_benefits").insert({
       user_id: userId,
       benefit_id: benefit.benefit_id,
       card_id: benefit.card_id,
       eligible_date: benefit.eligibleDate,
-    };
-    try {
-      const { error } = await supabase.from("user_used_benefits").insert({
-        ...insertPayload,
-        is_used: false,
-        used_at: null,
-        expiration_date: expiration,
-      });
+      is_used: false,
+      expiration_date: expiration,
+    });
 
-      if (error?.code === "23505") {
-        await supabase
-          .from("user_used_benefits")
-          .update({ expiration_date: expiration })
-          .eq("user_id", userId)
-          .eq("benefit_id", benefit.benefit_id)
-          .eq("eligible_date", benefit.eligibleDate);
-      } else if (error) {
-        const { error: fallbackErr } = await supabase.from("user_used_benefits").insert(insertPayload);
-        if (fallbackErr?.code === "23505") {
-          await supabase
-            .from("user_used_benefits")
-            .update({ expiration_date: expiration })
-            .eq("user_id", userId)
-            .eq("benefit_id", benefit.benefit_id)
-            .eq("eligible_date", benefit.eligibleDate);
-        }
-      }
-    } catch {
-      // Best-effort save for expiration date
+    if (error?.code === "23505") {
+      await supabase
+        .from("user_used_benefits")
+        .update({ expiration_date: expiration })
+        .eq("user_id", userId)
+        .eq("benefit_id", benefit.benefit_id)
+        .eq("eligible_date", benefit.eligibleDate);
     }
   };
 
@@ -125,21 +107,17 @@ export function useBenefitActions(
       benefit_id: benefit.benefit_id,
       card_id: benefit.card_id,
       eligible_date: benefit.eligibleDate,
+      is_used: true,
+      used_at: new Date().toISOString(),
     });
 
     if (error?.code === "23505") {
       await supabase
         .from("user_used_benefits")
-        .delete()
+        .update({ is_used: true, used_at: new Date().toISOString() })
         .eq("user_id", userId)
         .eq("benefit_id", benefit.benefit_id)
         .eq("eligible_date", benefit.eligibleDate);
-      await supabase.from("user_used_benefits").insert({
-        user_id: userId,
-        benefit_id: benefit.benefit_id,
-        card_id: benefit.card_id,
-        eligible_date: benefit.eligibleDate,
-      });
     } else if (error) {
       setAvailable((prev) => [...prev, benefit]);
       setGroups((prev) =>
@@ -192,21 +170,17 @@ export function useBenefitActions(
       benefit_id: group.benefit_id,
       card_id: group.card_id,
       eligible_date: period.eligible_date,
+      is_used: true,
+      used_at: new Date().toISOString(),
     });
 
     if (error?.code === "23505") {
       await supabase
         .from("user_used_benefits")
-        .delete()
+        .update({ is_used: true, used_at: new Date().toISOString() })
         .eq("user_id", userId)
         .eq("benefit_id", group.benefit_id)
         .eq("eligible_date", period.eligible_date);
-      await supabase.from("user_used_benefits").insert({
-        user_id: userId,
-        benefit_id: group.benefit_id,
-        card_id: group.card_id,
-        eligible_date: period.eligible_date,
-      });
     } else if (error) {
       setGroups((prev) =>
         prev.map((g) =>
@@ -273,7 +247,8 @@ export function useBenefitActions(
 
     const { error } = await supabase
       .from("user_used_benefits")
-      .delete()
+      .update({ is_used: false, used_at: null })
+      .eq("user_id", userId)
       .eq("benefit_id", group.benefit_id)
       .eq("eligible_date", period.eligible_date);
 

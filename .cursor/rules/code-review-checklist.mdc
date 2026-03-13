@@ -17,8 +17,7 @@ alwaysApply: true
 
 ## Supabase / PostgREST specifics for this project
 
-- **Never use `.eq()` / `.neq()` filters on columns that were added via ALTER TABLE** — PostgREST schema cache may not recognize them. Instead, fetch with `select("*")` and filter in application code using `!== false` guards.
-- **When the same table is queried in multiple files**, ensure all queries use the same defensive patterns. Files to check: `dashboard/page.tsx`, `benefits-data.ts`, `cards/[card_id]/page.tsx`, and any client components.
+- **When the same table is queried in multiple files**, ensure all queries use consistent patterns. Files to check: `dashboard/page.tsx`, `benefits-data.ts`, `cards/[card_id]/page.tsx`, and any client components.
 
 ## Shared logic
 

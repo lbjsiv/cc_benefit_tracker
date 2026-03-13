@@ -60,7 +60,7 @@ export default async function CardDetailPage({ params }: Props) {
 
   (usedBenefits ?? []).forEach((ub) => {
     const key = `${ub.benefit_id}_${ub.eligible_date}`;
-    if (ub.is_used !== false) {
+    if (ub.is_used) {
       usedMap.set(key, {
         used_benefit_id: ub.used_benefit_id,
         eligible_date: ub.eligible_date,
@@ -101,7 +101,7 @@ export default async function CardDetailPage({ params }: Props) {
 
   // Group used benefits by benefit_id for the period-dot view
   const usedByBenefitId = new Map<string, Array<{ used_benefit_id: string; eligible_date: string; used_at: string; expiration_date: string | null }>>();
-  (usedBenefits ?? []).filter((ub) => ub.is_used !== false).forEach((ub) => {
+  (usedBenefits ?? []).filter((ub) => ub.is_used).forEach((ub) => {
     const arr = usedByBenefitId.get(ub.benefit_id) ?? [];
     arr.push({ used_benefit_id: ub.used_benefit_id, eligible_date: ub.eligible_date, used_at: ub.used_at, expiration_date: ub.expiration_date ?? null });
     usedByBenefitId.set(ub.benefit_id, arr);

@@ -75,14 +75,12 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
   const benefitIds = new Set(benefits.map((b) => b.benefit_id));
   const relevantRows = (usedBenefitsData ?? []).filter((ub) => benefitIds.has(ub.benefit_id));
 
-  // Notes-only rows (is_used=false): carry expiration_date onto available benefits
   const notesMap = new Map<string, { expiration_date: string | null }>();
-  // Actually-used rows (is_used=true)
   const usedMap = new Map<string, { used_benefit_id: string; eligible_date: string; used_at: string; expiration_date: string | null }>();
 
   relevantRows.forEach((ub) => {
     const key = `${ub.benefit_id}_${ub.eligible_date}`;
-    if (ub.is_used !== false) {
+    if (ub.is_used) {
       usedMap.set(key, {
         used_benefit_id: ub.used_benefit_id,
         eligible_date: ub.eligible_date,
@@ -115,7 +113,7 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
     .filter((b) => !b.isUsed);
 
   const usedByBenefitId = new Map<string, Array<{ used_benefit_id: string; eligible_date: string; used_at: string; expiration_date: string | null }>>();
-  relevantRows.filter((ub) => ub.is_used !== false).forEach((ub) => {
+  relevantRows.filter((ub) => ub.is_used).forEach((ub) => {
     const arr = usedByBenefitId.get(ub.benefit_id) ?? [];
     arr.push({ used_benefit_id: ub.used_benefit_id, eligible_date: ub.eligible_date, used_at: ub.used_at, expiration_date: ub.expiration_date ?? null });
     usedByBenefitId.set(ub.benefit_id, arr);

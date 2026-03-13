@@ -1,0 +1,22 @@
+---
+description: Lessons learned about Supabase/PostgREST schema management
+alwaysApply: true
+---
+
+# Supabase / PostgREST Schema Lessons
+
+## ALTER TABLE columns may be invisible to PostgREST
+
+Columns added via `ALTER TABLE` can fail silently in Supabase — PostgREST's schema cache doesn't always pick them up, even after `NOTIFY pgrst, 'reload schema'` (which may not propagate through Supabase's connection pooler).
+
+**Symptoms:** `PGRST204` errors, `.eq()` / `.insert()` silently ignoring the new column, or the column defaulting to its `DEFAULT` value instead of the value you passed.
+
+**Fix:** Drop and recreate the table with all columns defined from the start. This guarantees PostgREST recognizes every column. Only do this when you can afford to lose existing data or can migrate it first.
+
+**Prevention:** When designing a new table, anticipate all columns you'll need (including booleans, timestamps, and text metadata). Adding them as original columns avoids this class of bug entirely.
+
+## Separate concerns in the same table row
+
+Don't overload a single row to serve multiple purposes. For example, if a row tracks both "is this benefit used?" and "what's the expiration note?", saving a note can accidentally flip the usage flag when the insert uses a different default.
+
+**Pattern:** Use `is_used: false` for metadata-only rows (e.g., expiration notes) and `is_used: true` for actual usage records. On conflict, only update the specific field you intend to change — never re-insert the whole row.
