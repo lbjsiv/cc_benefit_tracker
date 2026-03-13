@@ -41,7 +41,7 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-background">
       <div className="flex items-center gap-2.5 mb-2">
         <Logo size="lg" />
-        <span className="text-2xl font-bold tracking-tight text-foreground">BenefitTracker</span>
+        <span className="text-2xl font-bold tracking-tight text-foreground">MyCCPerks</span>
       </div>
       <p className="text-sm text-muted-foreground mb-6 text-center max-w-xs">
         Set a new password

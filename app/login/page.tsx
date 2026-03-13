@@ -137,7 +137,7 @@ export default function LoginPage() {
         {/* Branding */}
         <div className="flex items-center gap-2.5 mb-2">
           <Logo size="lg" />
-          <span className="text-2xl font-bold tracking-tight text-foreground">BenefitTracker</span>
+          <span className="text-2xl font-bold tracking-tight text-foreground">MyCCPerks</span>
         </div>
         <p className="text-sm text-muted-foreground mb-5 text-center max-w-xs">
           Track and maximize every credit card perk.

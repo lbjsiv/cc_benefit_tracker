@@ -40,7 +40,7 @@ export default function Navbar() {
           <div className="flex items-center gap-1 sm:gap-2">
             <Link href="/dashboard" className="flex items-center gap-2 text-lg font-bold text-foreground mr-4 sm:mr-8 shrink-0">
               <Logo />
-              <span className="hidden sm:inline">BenefitTracker</span>
+              <span className="hidden sm:inline">MyCCPerks</span>
             </Link>
             <Link href="/dashboard" className={linkClass("/dashboard")}>
               My Cards
@@ -54,7 +54,12 @@ export default function Navbar() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-xs text-muted-foreground hidden sm:inline">
-              {getNow().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+              {(() => {
+                const now = getNow();
+                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                const daysLeft = lastDay - now.getDate();
+                return `${now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })} (${daysLeft} day${daysLeft !== 1 ? "s" : ""} till end of month)`;
+              })()}
             </span>
             {email && (
               <span className="text-xs text-muted-foreground hidden sm:inline">{email}</span>

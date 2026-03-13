@@ -8,7 +8,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BenefitTracker",
+  title: "MyCCPerks",
   description: "Track and maximize your credit card benefits",
 };
 

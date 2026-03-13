@@ -4,7 +4,7 @@ interface LogoProps {
 
 export default function Logo({ size = "sm" }: LogoProps) {
   const isLg = size === "lg";
-  const dim = isLg ? 40 : 24;
+  const dim = isLg ? 48 : 32;
 
   return (
     <svg
