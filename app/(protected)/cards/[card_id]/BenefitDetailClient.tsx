@@ -49,9 +49,11 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
           <CardBadge cardName={card.card_name} acronym={card.card_badge_acronym} color={card.card_badge_color} issuer={card.card_issuer} size="lg" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">{card.card_name}</h1>
-            {card.card_points_multipliers && (
+            {(card.card_points_multipliers || card.card_annual_fee) && (
               <p className="text-xs text-muted-foreground mt-1">
                 {card.card_points_multipliers}
+                {card.card_points_multipliers && card.card_annual_fee ? " | " : ""}
+                {card.card_annual_fee ? `$${card.card_annual_fee.toLocaleString()} Annual Fee` : ""}
               </p>
             )}
           </div>

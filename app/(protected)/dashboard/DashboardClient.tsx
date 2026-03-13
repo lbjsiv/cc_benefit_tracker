@@ -29,9 +29,10 @@ interface Props {
   totalAvailableFreeNights: number;
   totalUsedCreditsValue: number;
   totalUsedFreeNights: number;
+  totalAnnualFees: number;
 }
 
-export default function DashboardClient({ cards, totalCards, totalAvailableValue, totalAvailableFreeNights, totalUsedCreditsValue, totalUsedFreeNights }: Props) {
+export default function DashboardClient({ cards, totalCards, totalAvailableValue, totalAvailableFreeNights, totalUsedCreditsValue, totalUsedFreeNights, totalAnnualFees }: Props) {
   const router = useRouter();
   const supabase = createClient();
   const [removingCardId, setRemovingCardId] = useState<string | null>(null);
@@ -69,29 +70,39 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
   return (
     <div>
       {/* Summary Bar */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
         <div className="bg-card border border-border rounded-2xl p-4 sm:p-6">
-          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Available Credits in {getNow().toLocaleDateString("en-US", { month: "long" })}</p>
-          <p className="text-2xl sm:text-3xl font-bold text-success mt-1">
-            ${totalAvailableValue.toLocaleString()}
-          </p>
+          <div className="mb-3">
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium">Available Credits in {getNow().toLocaleDateString("en-US", { month: "long" })}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-success mt-1">
+              ${totalAvailableValue.toLocaleString()}
+            </p>
+          </div>
+          <div className="pt-3 border-t border-border">
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium">Used Credits in {getNow().getFullYear()}</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">
+              ${totalUsedCreditsValue.toLocaleString()}
+            </p>
+          </div>
         </div>
         <div className="bg-card border border-border rounded-2xl p-4 sm:p-6">
-          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Used Credits in {getNow().getFullYear()}</p>
+          <div className="mb-3">
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium">Available Free Nights in {getNow().toLocaleDateString("en-US", { month: "long" })}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-success mt-1">
+              {totalAvailableFreeNights}
+            </p>
+          </div>
+          <div className="pt-3 border-t border-border">
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium">Used Free Nights in {getNow().getFullYear()}</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">
+              {totalUsedFreeNights}
+            </p>
+          </div>
+        </div>
+        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6 flex flex-col justify-center">
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Total Annual Fees</p>
           <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">
-            ${totalUsedCreditsValue.toLocaleString()}
-          </p>
-        </div>
-        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6">
-          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Available Free Nights in {getNow().toLocaleDateString("en-US", { month: "long" })}</p>
-          <p className="text-2xl sm:text-3xl font-bold text-success mt-1">
-            {totalAvailableFreeNights}
-          </p>
-        </div>
-        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6">
-          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Used Free Nights in {getNow().getFullYear()}</p>
-          <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">
-            {totalUsedFreeNights}
+            ${totalAnnualFees.toLocaleString()}
           </p>
         </div>
       </div>

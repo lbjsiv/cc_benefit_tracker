@@ -10,7 +10,7 @@ export default async function DashboardPage() {
 
   const { data: trackedCards } = await supabase
     .from("user_tracked_cards")
-    .select("card_id, dim_all_cards(card_id, card_name, card_issuer, image_url, card_badge_acronym, card_badge_color, card_points_multipliers)")
+    .select("card_id, dim_all_cards(card_id, card_name, card_issuer, image_url, card_badge_acronym, card_badge_color, card_points_multipliers, card_annual_fee)")
     .eq("user_id", user.id);
 
   const cardIds = trackedCards?.map((tc) => tc.card_id) ?? [];
@@ -77,6 +77,7 @@ export default async function DashboardPage() {
       card_badge_acronym: string | null;
       card_badge_color: string | null;
       card_points_multipliers: string | null;
+      card_annual_fee: number | null;
     };
 
     const cardBenefits = benefits.filter((b) => b.card_id === tc.card_id);
@@ -123,6 +124,7 @@ export default async function DashboardPage() {
       card_badge_acronym: card.card_badge_acronym,
       card_badge_color: card.card_badge_color,
       card_points_multipliers: card.card_points_multipliers,
+      card_annual_fee: card.card_annual_fee,
       availableCount,
       availableValue,
       availableFreeNights,
@@ -135,6 +137,7 @@ export default async function DashboardPage() {
   const totalAvailableFreeNights = cards.reduce((sum, c) => sum + c.availableFreeNights, 0);
   const totalUsedCreditsValue = cards.reduce((sum, c) => sum + c.usedCreditsValue, 0);
   const totalUsedFreeNights = cards.reduce((sum, c) => sum + c.usedFreeNights, 0);
+  const totalAnnualFees = cards.reduce((sum, c) => sum + (c.card_annual_fee ?? 0), 0);
 
   return (
     <DashboardClient
@@ -144,6 +147,7 @@ export default async function DashboardPage() {
       totalAvailableFreeNights={totalAvailableFreeNights}
       totalUsedCreditsValue={totalUsedCreditsValue}
       totalUsedFreeNights={totalUsedFreeNights}
+      totalAnnualFees={totalAnnualFees}
     />
   );
 }
