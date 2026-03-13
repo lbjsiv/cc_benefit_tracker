@@ -27,7 +27,7 @@ export default function Navbar() {
   };
 
   const linkClass = (path: string) =>
-    `px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+    `px-3 py-2 rounded-lg text-sm font-medium transition-colors text-center min-w-[5.5rem] ${
       pathname === path
         ? "bg-primary text-primary-foreground"
         : "text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -49,13 +49,16 @@ export default function Navbar() {
               <span className="hidden sm:inline">MyCCPerks</span>
             </Link>
             <Link href="/dashboard" className={linkClass("/dashboard")}>
-              My Cards
+              Cards
             </Link>
             <Link href="/credit-benefits" className={linkClass("/credit-benefits")}>
-              My Credits
+              Credits
             </Link>
             <Link href="/free-nights" className={linkClass("/free-nights")}>
-              My Free Nights
+              Free Nights
+            </Link>
+            <Link href="/annual-fees" className={linkClass("/annual-fees")}>
+              Annual Fees
             </Link>
           </div>
           <div className="flex items-center gap-4">

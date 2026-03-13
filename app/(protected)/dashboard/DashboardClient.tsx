@@ -70,46 +70,40 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
   return (
     <div>
       {/* Summary Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
-        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6">
-          <div className="mb-3">
-            <p className="text-xs sm:text-sm text-muted-foreground font-medium">Available Credits in {getNow().toLocaleDateString("en-US", { month: "long" })}</p>
-            <p className="text-2xl sm:text-3xl font-bold text-success mt-1">
-              ${totalAvailableValue.toLocaleString()}
-            </p>
+      <div className="bg-card border border-border rounded-2xl px-2 sm:px-0 py-4 mb-8 flex flex-col sm:flex-row sm:items-center sm:divide-x divide-border">
+        <Link href="/credit-benefits" className="flex-1 px-4 sm:px-6 py-2 sm:py-0 hover:bg-muted/50 transition-colors rounded-xl sm:rounded-none">
+          <p className="text-xs text-muted-foreground font-medium">Credits</p>
+          <div className="flex items-baseline gap-2 mt-0.5">
+            <span className="text-xl font-bold text-success">${totalAvailableValue.toLocaleString()}</span>
+            <span className="text-xs text-muted-foreground">available in {getNow().toLocaleDateString("en-US", { month: "short" })}</span>
+            <span className="text-muted-foreground/30">·</span>
+            <span className="text-sm font-semibold text-foreground">${totalUsedCreditsValue.toLocaleString()}</span>
+            <span className="text-xs text-muted-foreground">used in {getNow().getFullYear()}</span>
           </div>
-          <div className="pt-3 border-t border-border">
-            <p className="text-xs sm:text-sm text-muted-foreground font-medium">Used Credits in {getNow().getFullYear()}</p>
-            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">
-              ${totalUsedCreditsValue.toLocaleString()}
-            </p>
+        </Link>
+        <div className="border-t border-border sm:border-t-0 my-2 sm:my-0" />
+        <Link href="/free-nights" className="flex-1 px-4 sm:px-6 py-2 sm:py-0 hover:bg-muted/50 transition-colors rounded-xl sm:rounded-none">
+          <p className="text-xs text-muted-foreground font-medium">Free Nights</p>
+          <div className="flex items-baseline gap-2 mt-0.5">
+            <span className="text-xl font-bold text-success">{totalAvailableFreeNights}</span>
+            <span className="text-xs text-muted-foreground">available in {getNow().toLocaleDateString("en-US", { month: "short" })}</span>
+            <span className="text-muted-foreground/30">·</span>
+            <span className="text-sm font-semibold text-foreground">{totalUsedFreeNights}</span>
+            <span className="text-xs text-muted-foreground">used in {getNow().getFullYear()}</span>
           </div>
-        </div>
-        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6">
-          <div className="mb-3">
-            <p className="text-xs sm:text-sm text-muted-foreground font-medium">Available Free Nights in {getNow().toLocaleDateString("en-US", { month: "long" })}</p>
-            <p className="text-2xl sm:text-3xl font-bold text-success mt-1">
-              {totalAvailableFreeNights}
-            </p>
+        </Link>
+        <div className="border-t border-border sm:border-t-0 my-2 sm:my-0" />
+        <Link href="/annual-fees" className="flex-1 px-4 sm:px-6 py-2 sm:py-0 hover:bg-muted/50 transition-colors rounded-xl sm:rounded-none">
+          <p className="text-xs text-muted-foreground font-medium">Total Annual Fees</p>
+          <div className="flex items-baseline gap-2 mt-0.5">
+            <span className="text-xl font-bold text-foreground">${totalAnnualFees.toLocaleString()}</span>
           </div>
-          <div className="pt-3 border-t border-border">
-            <p className="text-xs sm:text-sm text-muted-foreground font-medium">Used Free Nights in {getNow().getFullYear()}</p>
-            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">
-              {totalUsedFreeNights}
-            </p>
-          </div>
-        </div>
-        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6 flex flex-col justify-center">
-          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Total Annual Fees</p>
-          <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">
-            ${totalAnnualFees.toLocaleString()}
-          </p>
-        </div>
+        </Link>
       </div>
 
       {/* Header + Add Button */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-foreground">Your Cards</h2>
+        <h2 className="text-xl font-bold text-foreground">My Cards</h2>
         <Link
           href="/cards"
           className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-base hover:opacity-90 transition-opacity"
