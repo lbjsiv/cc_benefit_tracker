@@ -185,6 +185,22 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
           </div>
         ))}
       </div>
+
+      {/* Footer */}
+      {(() => {
+        const n = getNow();
+        const lastDay = new Date(n.getFullYear(), n.getMonth() + 1, 0).getDate();
+        const daysLeft = lastDay - n.getDate();
+        return (
+          <div className="mt-10 pt-4 border-t border-border text-center">
+            <p className="text-xs text-muted-foreground">
+              {n.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+              {" · "}
+              {daysLeft} day{daysLeft !== 1 ? "s" : ""} till end of month
+            </p>
+          </div>
+        );
+      })()}
     </div>
   );
 }

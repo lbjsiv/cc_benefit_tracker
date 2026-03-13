@@ -90,3 +90,20 @@ CREATE POLICY "Users can read their own requests"
   ON card_requests FOR SELECT
   USING (auth.uid() = user_id);
 
+-- 7. user_settings — per-user preferences
+CREATE TABLE user_settings (
+  user_id                    UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  notify_expiring_benefits   BOOLEAN NOT NULL DEFAULT false,
+  notify_days_monthly        INTEGER NOT NULL DEFAULT 7,
+  notify_days_quarterly      INTEGER NOT NULL DEFAULT 30,
+  notify_days_half_yearly    INTEGER NOT NULL DEFAULT 30,
+  notify_days_yearly         INTEGER NOT NULL DEFAULT 90,
+  notify_days_free_night     INTEGER NOT NULL DEFAULT 90,
+  updated_at                 TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can access own settings" ON user_settings
+  FOR ALL USING (auth.uid() = user_id);
+
