@@ -81,3 +81,49 @@ body {
 .cash-animation {
   animation: cash-slide 1.5s ease-in-out infinite;
 }
+
+@keyframes card-float {
+  0% {
+    transform: translateX(100vw) rotate(var(--card-rotate, 6deg));
+    opacity: 0;
+  }
+  5% {
+    opacity: var(--card-opacity, 0.15);
+  }
+  95% {
+    opacity: var(--card-opacity, 0.15);
+  }
+  100% {
+    transform: translateX(-100vw) rotate(var(--card-rotate, 6deg));
+    opacity: 0;
+  }
+}
+
+.floating-card {
+  left: 0;
+  animation: card-float var(--card-duration, 18s) linear infinite;
+  animation-delay: var(--card-delay, 0s);
+}
+
+@keyframes card-float-reverse {
+  0% {
+    transform: translateX(-100vw) rotate(var(--card-rotate, -6deg));
+    opacity: 0;
+  }
+  5% {
+    opacity: var(--card-opacity, 0.15);
+  }
+  95% {
+    opacity: var(--card-opacity, 0.15);
+  }
+  100% {
+    transform: translateX(100vw) rotate(var(--card-rotate, -6deg));
+    opacity: 0;
+  }
+}
+
+.floating-card-reverse {
+  left: 0;
+  animation: card-float-reverse var(--card-duration, 18s) linear infinite;
+  animation-delay: var(--card-delay, 0s);
+}
