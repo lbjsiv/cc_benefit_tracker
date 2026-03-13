@@ -176,7 +176,7 @@ const cards: CardInput[] = [
     card_issuer: "Chase",
     image_url: "/cards/chase-marriott-boundless.png",
     card_points_multipliers: "Up to 17X Marriott · 3X Gas, groceries & dining (on first $6k/yr) · 2X Other Travel",
-    card_badge_acronym: "MBB",
+    card_badge_acronym: "MAR",
     card_badge_color: "#991b1b",
     benefits: [
       {
@@ -195,7 +195,7 @@ const cards: CardInput[] = [
     card_issuer: "American Express",
     image_url: "/cards/amex-hilton-aspire.png",
     card_points_multipliers: "14X Hilton · 7X Flights, car rentals & U.S. restaurants",
-    card_badge_acronym: "HAS",
+    card_badge_acronym: "HLT",
     card_badge_color: "#5b21b6",
     benefits: [
       {
@@ -216,7 +216,7 @@ const cards: CardInput[] = [
       },
       {
         benefit_description: "Annual Free Night Reward",
-        benefit_category: "Travel",
+        benefit_category: "Hotel",
         benefit_type: "free_night",
         value: 0,
         frequency: "yearly",
@@ -235,7 +235,7 @@ const cards: CardInput[] = [
     benefits: [
       {
         benefit_description: "Category 1-4 Hyatt Free Night",
-        benefit_category: "Travel",
+        benefit_category: "Hotel",
         benefit_type: "free_night",
         value: 0,
         frequency: "yearly",

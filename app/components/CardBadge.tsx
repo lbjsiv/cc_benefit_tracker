@@ -15,12 +15,25 @@ function getFallbackAcronym(cardName: string): string {
   return acronym || "CC";
 }
 
-function lighten(hex: string, amount: number): string {
+function hexToHsl(hex: string): [number, number, number] {
   const num = parseInt(hex.replace("#", ""), 16);
-  const r = Math.min(255, (num >> 16) + Math.round(amount * 255));
-  const g = Math.min(255, ((num >> 8) & 0xff) + Math.round(amount * 255));
-  const b = Math.min(255, (num & 0xff) + Math.round(amount * 255));
-  return `rgb(${r}, ${g}, ${b})`;
+  const r = (num >> 16) / 255;
+  const g = ((num >> 8) & 0xff) / 255;
+  const b = (num & 0xff) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return [0, 0, l * 100];
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h = 0;
+  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+  else if (max === g) h = ((b - r) / d + 2) / 6;
+  else h = ((r - g) / d + 4) / 6;
+  return [h * 360, s * 100, l * 100];
+}
+
+function hslString(h: number, s: number, l: number): string {
+  return `hsl(${((h % 360) + 360) % 360}, ${s}%, ${l}%)`;
 }
 
 export default function CardBadge({ cardName, acronym, color, size = "sm" }: CardBadgeProps) {
@@ -30,14 +43,16 @@ export default function CardBadge({ cardName, acronym, color, size = "sm" }: Car
   const dim = isLg ? "w-14 h-14" : "w-12 h-12";
   const fontSize = isLg ? "text-sm" : "text-xs";
 
+  const [h, s, l] = hexToHsl(bgColor);
+  const from = hslString(h - 25, Math.min(s + 10, 100), Math.min(l + 8, 65));
+  const to = hslString(h + 25, Math.min(s + 10, 100), Math.min(l + 8, 65));
+
   return (
     <div
-      className={`rounded-full flex items-center justify-center shrink-0 shadow-sm ring-1 ring-white/20 ${dim}`}
-      style={{
-        background: `linear-gradient(135deg, ${lighten(bgColor, 0.15)} 0%, ${bgColor} 100%)`,
-      }}
+      className={`rounded-full flex items-center justify-center shrink-0 ${dim}`}
+      style={{ background: `linear-gradient(135deg, ${from}, ${to})` }}
     >
-      <span className={`font-bold text-white tracking-wider ${fontSize}`}>
+      <span className={`font-semibold text-white tracking-wide ${fontSize}`}>
         {displayAcronym}
       </span>
     </div>
