@@ -2,15 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getCurrentPeriodEligibleDate, generateYearPeriods, type PeriodDot, type Frequency, type BenefitType } from "@/lib/benefits";
 import CardBadge from "@/app/components/CardBadge";
-import { getCardConfig } from "@/lib/card-config";
 
 interface AvailableBenefit {
   benefit_id: string;
   card_id: string;
+  card_name: string;
   benefit_description: string;
   benefit_category: string;
   benefit_type: BenefitType;
@@ -24,6 +23,7 @@ interface AvailableBenefit {
 interface UsedBenefitGroup {
   benefit_id: string;
   card_id: string;
+  card_name: string;
   benefit_description: string;
   benefit_category: string;
   benefit_type: BenefitType;
@@ -35,18 +35,13 @@ interface UsedBenefitGroup {
   periods: PeriodDot[];
 }
 
-interface Card {
-  card_id: string;
-  card_name: string;
-  card_issuer: string;
-  image_url: string;
-}
-
 interface Props {
-  card: Card;
+  title: string;
+  subtitle: string;
   userId: string;
   availableBenefits: AvailableBenefit[];
   usedBenefitGroups: UsedBenefitGroup[];
+  mode: "credit" | "free_night";
 }
 
 const categoryColors: Record<string, string> = {
@@ -59,7 +54,7 @@ const categoryColors: Record<string, string> = {
   Fitness: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
 };
 
-export default function BenefitDetailClient({ card, userId, availableBenefits, usedBenefitGroups }: Props) {
+export default function CombinedBenefitsClient({ title, subtitle, userId, availableBenefits, usedBenefitGroups, mode }: Props) {
   const router = useRouter();
   const supabase = createClient();
   const [available, setAvailable] = useState(availableBenefits);
@@ -70,10 +65,8 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
 
   const markAsUsed = async (benefit: AvailableBenefit) => {
     setActionInProgress(benefit.benefit_id);
-
     setAvailable((prev) => prev.filter((b) => b.benefit_id !== benefit.benefit_id));
 
-    // Update the group if it exists, otherwise create a new group entry
     setGroups((prev) => {
       const existing = prev.find((g) => g.benefit_id === benefit.benefit_id);
       if (existing) {
@@ -91,7 +84,6 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
             : g
         );
       }
-      // Benefit not yet in groups — create a new group with period dots
       const freq = benefit.frequency as Frequency;
       const periods = generateYearPeriods(freq, currentYear).map((p) => ({
         ...p,
@@ -105,6 +97,7 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
         {
           benefit_id: benefit.benefit_id,
           card_id: benefit.card_id,
+          card_name: benefit.card_name,
           benefit_description: benefit.benefit_description,
           benefit_category: benefit.benefit_category,
           benefit_type: benefit.benefit_type,
@@ -152,7 +145,6 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
     const tempId = crypto.randomUUID();
     setActionInProgress(tempId);
 
-    // Optimistic: fill the dot
     setGroups((prev) =>
       prev.map((g) =>
         g.benefit_id === group.benefit_id
@@ -169,7 +161,6 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
       )
     );
 
-    // Remove from available if it matches the current period
     setAvailable((prev) =>
       prev.filter((a) => !(a.benefit_id === group.benefit_id && a.eligibleDate === period.eligible_date))
     );
@@ -182,7 +173,6 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
     });
 
     if (error) {
-      // Revert
       setGroups((prev) =>
         prev.map((g) =>
           g.benefit_id === group.benefit_id
@@ -208,7 +198,6 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
     if (!period.used_benefit_id) return;
     setActionInProgress(period.used_benefit_id);
 
-    // Optimistic: unmark the dot
     setGroups((prev) =>
       prev.map((g) =>
         g.benefit_id === group.benefit_id
@@ -225,12 +214,12 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
       )
     );
 
-    // Only restore to available if it's the current period
     const isCurrentPeriod = period.eligible_date === getCurrentPeriodEligibleDate(group.frequency as Frequency);
     if (isCurrentPeriod) {
       const restored: AvailableBenefit = {
         benefit_id: group.benefit_id,
         card_id: group.card_id,
+        card_name: group.card_name,
         benefit_description: group.benefit_description,
         benefit_category: group.benefit_category,
         benefit_type: group.benefit_type,
@@ -250,7 +239,6 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
       .eq("eligible_date", period.eligible_date);
 
     if (error) {
-      // Revert
       setGroups((prev) =>
         prev.map((g) =>
           g.benefit_id === group.benefit_id
@@ -274,43 +262,26 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
   };
 
   const activeGroups = groups.filter((g) => g.usedCount > 0);
-  const creditGroups = activeGroups.filter((g) => g.benefit_type === "credit");
-  const freeNightGroups = activeGroups.filter((g) => g.benefit_type === "free_night");
-  const totalUsedValue = creditGroups.reduce((sum, g) => sum + g.usedCount * Number(g.value), 0);
-  const totalFreeNightsUsed = freeNightGroups.reduce((sum, g) => sum + g.usedCount, 0);
+  const isCredit = mode === "credit";
+  const totalUsedValue = isCredit
+    ? activeGroups.reduce((sum, g) => sum + g.usedCount * Number(g.value), 0)
+    : 0;
+  const totalFreeNightsUsed = !isCredit
+    ? activeGroups.reduce((sum, g) => sum + g.usedCount, 0)
+    : 0;
 
   return (
     <div>
-      {/* Header */}
       <div className="mb-8">
-        <Link
-          href="/dashboard"
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors mb-4 inline-block"
-        >
-          ← Back to My Cards
-        </Link>
-        <div className="flex items-center gap-4">
-          <CardBadge cardName={card.card_name} size="lg" />
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{card.card_name}</h1>
-            {(() => {
-              const config = getCardConfig(card.card_name);
-              if (!config) return null;
-              return (
-                <p className="text-xs text-muted-foreground mt-1">
-                  {config.multipliers.map((m) => `${m.multiplier} ${m.category}`).join(" · ")}
-                </p>
-              );
-            })()}
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+        <p className="text-muted-foreground text-sm mt-1">{subtitle}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Available Benefits */}
+        {/* Available */}
         <div>
           <h2 className="text-lg font-bold text-foreground mb-1">
-            Available Benefits
+            Available
             {available.length > 0 && (
               <span className="ml-2 text-sm font-normal text-muted-foreground">
                 ({available.length})
@@ -318,14 +289,16 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
             )}
           </h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Your available benefits for {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}. 
+            {isCredit
+              ? `Credits you can use for ${new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}.`
+              : "Free night certificates available to redeem."}
           </p>
 
           {available.length === 0 ? (
             <div className="bg-card border border-border rounded-2xl p-8 text-center">
-              <div className="text-4xl mb-3">🎉</div>
+              <div className="text-4xl mb-3">{isCredit ? "🎉" : "🌙"}</div>
               <p className="font-semibold text-foreground">
-                Congrats! You&apos;ve used all your benefits this period
+                {isCredit ? "All credits used this period!" : "No free nights available."}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
                 Check back when the next period starts.
@@ -335,11 +308,12 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
             <div className="space-y-3">
               {available.map((benefit) => (
                 <div
-                  key={benefit.benefit_id}
+                  key={`${benefit.benefit_id}_${benefit.eligibleDate}`}
                   className="bg-card border border-border rounded-2xl p-4 flex items-center justify-between gap-4"
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <CardBadge cardName={benefit.card_name} size="sm" />
                       <span
                         className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                           categoryColors[benefit.benefit_category] ?? "bg-secondary text-secondary-foreground"
@@ -353,10 +327,10 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
                     {benefit.benefit_notes && (
                       <p className="text-xs text-muted-foreground mt-0.5">{benefit.benefit_notes}</p>
                     )}
-                    {benefit.benefit_type === "free_night" ? (
-                      <p className="text-teal-600 dark:text-teal-400 font-bold text-sm mt-0.5">Free Night</p>
-                    ) : (
+                    {isCredit ? (
                       <p className="text-success font-bold text-sm mt-0.5">${Number(benefit.value).toLocaleString()}</p>
+                    ) : (
+                      <p className="text-teal-600 dark:text-teal-400 font-bold text-sm mt-0.5">Free Night</p>
                     )}
                   </div>
                   <button
@@ -375,27 +349,28 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
           )}
         </div>
 
-        {/* Used Benefits */}
+        {/* Used */}
         <div>
           <h2 className="text-lg font-bold text-foreground mb-1">
-            Used Benefits
+            Used
             {(totalUsedValue > 0 || totalFreeNightsUsed > 0) && (
               <span className="ml-2 text-sm font-normal text-muted-foreground">
-                ({[
-                  totalUsedValue > 0 && `$${totalUsedValue.toLocaleString()} redeemed`,
-                  totalFreeNightsUsed > 0 && `${totalFreeNightsUsed} free night${totalFreeNightsUsed !== 1 ? "s" : ""} used`,
-                ].filter(Boolean).join(", ")})
+                ({isCredit
+                  ? `$${totalUsedValue.toLocaleString()} redeemed`
+                  : `${totalFreeNightsUsed} free night${totalFreeNightsUsed !== 1 ? "s" : ""} used`})
               </span>
             )}
           </h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Your redeemed benefits for {currentYear}. Filled dots are periods you&apos;ve used.
+            {isCredit
+              ? `Redeemed credits for ${currentYear}. Filled dots are periods you've used.`
+              : `Free nights redeemed for ${currentYear}.`}
           </p>
 
           {activeGroups.length === 0 ? (
             <div className="bg-card border border-border rounded-2xl p-8 text-center">
               <p className="text-muted-foreground text-sm">
-                No benefits used yet this year. Mark available benefits as used to track them here.
+                {isCredit ? "No credits used yet this year." : "No free nights used yet this year."}
               </p>
             </div>
           ) : (
@@ -403,6 +378,7 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
               {activeGroups.map((group) => (
                 <div key={group.benefit_id} className="bg-card border border-border rounded-2xl p-4">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <CardBadge cardName={group.card_name} size="sm" />
                     <span
                       className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                         categoryColors[group.benefit_category] ?? "bg-secondary text-secondary-foreground"
@@ -419,12 +395,11 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
                     <p className="text-xs text-muted-foreground mt-0.5">{group.benefit_notes}</p>
                   )}
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    {group.benefit_type === "free_night"
-                      ? `Free Night · ${group.frequency}`
-                      : `$${Number(group.value).toLocaleString()} per ${group.frequency === "half-yearly" ? "half" : group.frequency.replace("ly", "")}`}
+                    {isCredit
+                      ? `$${Number(group.value).toLocaleString()} per ${group.frequency === "half-yearly" ? "half" : group.frequency.replace("ly", "")}`
+                      : `Free Night · ${group.frequency}`}
                   </p>
 
-                  {/* Period Dots */}
                   <div className="mt-3 flex items-end gap-1 flex-wrap">
                     {group.periods.map((period) => (
                       <div key={period.eligible_date} className="flex flex-col items-center gap-1">

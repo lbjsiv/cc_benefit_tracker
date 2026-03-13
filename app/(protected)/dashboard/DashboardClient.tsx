@@ -128,11 +128,10 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
               </button>
             )}
             <Link href={`/cards/${card.card_id}`} className="block px-4 py-4">
-              <div className="flex items-start gap-3">
+              <div className="flex items-center gap-3">
                 <CardBadge cardName={card.card_name} />
                 <div className="min-w-0 pr-6">
                   <h3 className="font-semibold text-foreground truncate">{card.card_name}</h3>
-                  <p className="text-sm text-muted-foreground">{card.card_issuer}</p>
                 </div>
               </div>
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">

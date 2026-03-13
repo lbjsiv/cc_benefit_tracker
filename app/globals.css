@@ -40,7 +40,7 @@
   --color-ring: var(--ring);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: 'Satoshi', sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 

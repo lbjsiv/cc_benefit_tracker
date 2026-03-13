@@ -3,13 +3,21 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Logo from "@/app/components/Logo";
 
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
   const [signingOut, setSigningOut] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setEmail(data.user?.email ?? null);
+    });
+  }, []);
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -29,23 +37,32 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-1 sm:gap-2">
-            <Link href="/dashboard" className="text-lg font-bold text-foreground mr-4 sm:mr-8 shrink-0">
-              💳 BenefitTracker
+            <Link href="/dashboard" className="flex items-center gap-2 text-lg font-bold text-foreground mr-4 sm:mr-8 shrink-0">
+              <Logo />
+              <span className="hidden sm:inline">BenefitTracker</span>
             </Link>
             <Link href="/dashboard" className={linkClass("/dashboard")}>
-              Dashboard
+              My Cards
             </Link>
-            <Link href="/cards" className={linkClass("/cards")}>
-              Cards
+            <Link href="/credit-benefits" className={linkClass("/credit-benefits")}>
+              All Credits
+            </Link>
+            <Link href="/free-nights" className={linkClass("/free-nights")}>
+              All Free Nights
             </Link>
           </div>
-          <button
-            onClick={handleSignOut}
-            disabled={signingOut}
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-          >
-            {signingOut ? "Signing out…" : "Sign Out"}
-          </button>
+          <div className="flex items-center gap-4">
+            {email && (
+              <span className="text-xs text-muted-foreground hidden sm:inline">{email}</span>
+            )}
+            <button
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+            >
+              {signingOut ? "Signing out…" : "Sign Out"}
+            </button>
+          </div>
         </div>
       </div>
     </nav>

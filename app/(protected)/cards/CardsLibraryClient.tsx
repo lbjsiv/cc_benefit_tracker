@@ -82,11 +82,10 @@ export default function CardsLibraryClient({ cards, userId }: Props) {
                 isTracked ? "border-success/50 bg-success/5" : "border-border hover:shadow-md"
               }`}
             >
-              <div className="flex items-start gap-4 mb-4">
+              <div className="flex items-center gap-4 mb-4">
                 <CardBadge cardName={card.card_name} />
                 <div className="min-w-0">
                   <h3 className="font-semibold text-foreground truncate">{card.card_name}</h3>
-                  <p className="text-sm text-muted-foreground">{card.card_issuer}</p>
                 </div>
               </div>
               {isTracked ? (
@@ -106,7 +105,7 @@ export default function CardsLibraryClient({ cards, userId }: Props) {
                   disabled={addingCardId === card.card_id}
                   className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
-                  {addingCardId === card.card_id ? "Adding…" : "+ Add to Dashboard"}
+                  {addingCardId === card.card_id ? "Adding…" : "Start Tracking"}
                 </button>
               )}
             </div>
