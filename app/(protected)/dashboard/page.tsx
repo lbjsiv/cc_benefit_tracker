@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentPeriodEligibleDate, type Frequency } from "@/lib/benefits";
+import { getCurrentPeriodEligibleDate, type Frequency, type BenefitType } from "@/lib/benefits";
 import DashboardClient from "./DashboardClient";
 
 export default async function DashboardPage() {
@@ -20,6 +20,7 @@ export default async function DashboardPage() {
     card_id: string;
     benefit_description: string;
     benefit_category: string;
+    benefit_type: BenefitType;
     value: number;
     frequency: Frequency;
   }> = [];
@@ -52,13 +53,18 @@ export default async function DashboardPage() {
     const cardBenefits = benefits.filter((b) => b.card_id === tc.card_id);
     let availableCount = 0;
     let availableValue = 0;
+    let availableFreeNights = 0;
 
     cardBenefits.forEach((b) => {
       const eligibleDate = getCurrentPeriodEligibleDate(b.frequency);
       const key = `${b.benefit_id}_${eligibleDate}`;
       if (!usedSet.has(key)) {
         availableCount++;
-        availableValue += Number(b.value);
+        if (b.benefit_type === "free_night") {
+          availableFreeNights++;
+        } else {
+          availableValue += Number(b.value);
+        }
       }
     });
 
@@ -69,16 +75,19 @@ export default async function DashboardPage() {
       image_url: card.image_url,
       availableCount,
       availableValue,
+      availableFreeNights,
     };
   });
 
   const totalAvailableValue = cards.reduce((sum, c) => sum + c.availableValue, 0);
+  const totalAvailableFreeNights = cards.reduce((sum, c) => sum + c.availableFreeNights, 0);
 
   return (
     <DashboardClient
       cards={cards}
       totalCards={cards.length}
       totalAvailableValue={totalAvailableValue}
+      totalAvailableFreeNights={totalAvailableFreeNights}
     />
   );
 }

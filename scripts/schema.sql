@@ -3,8 +3,9 @@
 -- Run this in the Supabase SQL Editor
 -- ============================================
 
--- 1. Custom enum for benefit frequency
+-- 1. Custom enums
 CREATE TYPE benefit_frequency AS ENUM ('monthly', 'quarterly', 'half-yearly', 'yearly');
+CREATE TYPE benefit_type AS ENUM ('credit', 'free_night');
 
 -- 2. dim_all_cards — static card catalog
 CREATE TABLE dim_all_cards (
@@ -20,8 +21,10 @@ CREATE TABLE card_benefits (
   card_id             UUID NOT NULL REFERENCES dim_all_cards(card_id) ON DELETE CASCADE,
   benefit_description TEXT NOT NULL,
   benefit_category    TEXT,
+  benefit_type        benefit_type NOT NULL DEFAULT 'credit',
   value               NUMERIC,
-  frequency           benefit_frequency NOT NULL
+  frequency           benefit_frequency NOT NULL,
+  benefit_notes       TEXT
 );
 
 -- 4. user_tracked_cards — which cards a user tracks

@@ -5,6 +5,7 @@ import {
   getPeriodLabel,
   generateYearPeriods,
   type Frequency,
+  type BenefitType,
 } from "@/lib/benefits";
 import BenefitDetailClient from "./BenefitDetailClient";
 
@@ -68,8 +69,10 @@ export default async function CardDetailPage({ params }: Props) {
     card_id: string;
     benefit_description: string;
     benefit_category: string;
+    benefit_type: BenefitType;
     value: number;
     frequency: Frequency;
+    benefit_notes: string | null;
   }>;
 
   const availableBenefits = typedBenefits
@@ -113,8 +116,10 @@ export default async function CardDetailPage({ params }: Props) {
         card_id: b.card_id,
         benefit_description: b.benefit_description,
         benefit_category: b.benefit_category,
+        benefit_type: b.benefit_type,
         value: b.value,
         frequency: b.frequency,
+        benefit_notes: b.benefit_notes,
         usedCount: usages.length,
         totalPeriods: periods.length,
         periods,

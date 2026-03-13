@@ -1,4 +1,5 @@
 export type Frequency = "monthly" | "quarterly" | "half-yearly" | "yearly";
+export type BenefitType = "credit" | "free_night";
 
 export function getEligibleDate(date: Date, frequency: Frequency): string {
   const year = date.getFullYear();

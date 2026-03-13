@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import CardBadge from "@/app/components/CardBadge";
 
 interface Card {
   card_id: string;
@@ -82,9 +83,7 @@ export default function CardsLibraryClient({ cards, userId }: Props) {
               }`}
             >
               <div className="flex items-start gap-4 mb-4">
-                <div className="w-14 h-9 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center text-xl shrink-0">
-                  💳
-                </div>
+                <CardBadge cardName={card.card_name} />
                 <div className="min-w-0">
                   <h3 className="font-semibold text-foreground truncate">{card.card_name}</h3>
                   <p className="text-sm text-muted-foreground">{card.card_issuer}</p>

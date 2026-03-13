@@ -4,15 +4,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { getCurrentPeriodEligibleDate, generateYearPeriods, type PeriodDot, type Frequency } from "@/lib/benefits";
+import { getCurrentPeriodEligibleDate, generateYearPeriods, type PeriodDot, type Frequency, type BenefitType } from "@/lib/benefits";
+import CardBadge from "@/app/components/CardBadge";
 
 interface AvailableBenefit {
   benefit_id: string;
   card_id: string;
   benefit_description: string;
   benefit_category: string;
+  benefit_type: BenefitType;
   value: number;
   frequency: string;
+  benefit_notes?: string | null;
   eligibleDate: string;
   periodLabel: string;
 }
@@ -22,8 +25,10 @@ interface UsedBenefitGroup {
   card_id: string;
   benefit_description: string;
   benefit_category: string;
+  benefit_type: BenefitType;
   value: number;
   frequency: string;
+  benefit_notes?: string | null;
   usedCount: number;
   totalPeriods: number;
   periods: PeriodDot[];
@@ -49,6 +54,8 @@ const categoryColors: Record<string, string> = {
   Shopping: "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300",
   Entertainment: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
   Rewards: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+  Hotel: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300",
+  Fitness: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
 };
 
 export default function BenefitDetailClient({ card, userId, availableBenefits, usedBenefitGroups }: Props) {
@@ -99,8 +106,10 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
           card_id: benefit.card_id,
           benefit_description: benefit.benefit_description,
           benefit_category: benefit.benefit_category,
+          benefit_type: benefit.benefit_type,
           value: benefit.value,
           frequency: benefit.frequency,
+          benefit_notes: benefit.benefit_notes,
           usedCount: 1,
           totalPeriods: periods.length,
           periods,
@@ -223,8 +232,10 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
         card_id: group.card_id,
         benefit_description: group.benefit_description,
         benefit_category: group.benefit_category,
+        benefit_type: group.benefit_type,
         value: group.value,
         frequency: group.frequency,
+        benefit_notes: group.benefit_notes,
         eligibleDate: period.eligible_date,
         periodLabel: period.label,
       };
@@ -262,7 +273,10 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
   };
 
   const activeGroups = groups.filter((g) => g.usedCount > 0);
-  const totalUsedValue = activeGroups.reduce((sum, g) => sum + g.usedCount * Number(g.value), 0);
+  const creditGroups = activeGroups.filter((g) => g.benefit_type === "credit");
+  const freeNightGroups = activeGroups.filter((g) => g.benefit_type === "free_night");
+  const totalUsedValue = creditGroups.reduce((sum, g) => sum + g.usedCount * Number(g.value), 0);
+  const totalFreeNightsUsed = freeNightGroups.reduce((sum, g) => sum + g.usedCount, 0);
 
   return (
     <div>
@@ -275,9 +289,7 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
           ← Back to Dashboard
         </Link>
         <div className="flex items-center gap-4">
-          <div className="w-16 h-10 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center text-2xl shrink-0">
-            💳
-          </div>
+          <CardBadge cardName={card.card_name} size="lg" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">{card.card_name}</h1>
             <p className="text-muted-foreground">{card.card_issuer}</p>
@@ -329,7 +341,14 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
                       <span className="text-xs text-muted-foreground">{benefit.periodLabel}</span>
                     </div>
                     <p className="font-medium text-foreground text-sm">{benefit.benefit_description}</p>
-                    <p className="text-success font-bold text-sm mt-0.5">${Number(benefit.value).toLocaleString()}</p>
+                    {benefit.benefit_notes && (
+                      <p className="text-xs text-muted-foreground mt-0.5">{benefit.benefit_notes}</p>
+                    )}
+                    {benefit.benefit_type === "free_night" ? (
+                      <p className="text-teal-600 dark:text-teal-400 font-bold text-sm mt-0.5">Free Night</p>
+                    ) : (
+                      <p className="text-success font-bold text-sm mt-0.5">${Number(benefit.value).toLocaleString()}</p>
+                    )}
                   </div>
                   <button
                     onClick={() => markAsUsed(benefit)}
@@ -351,9 +370,12 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
         <div>
           <h2 className="text-lg font-bold text-foreground mb-1">
             Used Benefits
-            {totalUsedValue > 0 && (
+            {(totalUsedValue > 0 || totalFreeNightsUsed > 0) && (
               <span className="ml-2 text-sm font-normal text-muted-foreground">
-                (${totalUsedValue.toLocaleString()} redeemed)
+                ({[
+                  totalUsedValue > 0 && `$${totalUsedValue.toLocaleString()} redeemed`,
+                  totalFreeNightsUsed > 0 && `${totalFreeNightsUsed} free night${totalFreeNightsUsed !== 1 ? "s" : ""} used`,
+                ].filter(Boolean).join(", ")})
               </span>
             )}
           </h2>
@@ -384,8 +406,13 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
                     </span>
                   </div>
                   <p className="font-medium text-foreground text-sm">{group.benefit_description}</p>
+                  {group.benefit_notes && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{group.benefit_notes}</p>
+                  )}
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    ${Number(group.value).toLocaleString()} per {group.frequency === "half-yearly" ? "half" : group.frequency.replace("ly", "")}
+                    {group.benefit_type === "free_night"
+                      ? `Free Night · ${group.frequency}`
+                      : `$${Number(group.value).toLocaleString()} per ${group.frequency === "half-yearly" ? "half" : group.frequency.replace("ly", "")}`}
                   </p>
 
                   {/* Period Dots */}

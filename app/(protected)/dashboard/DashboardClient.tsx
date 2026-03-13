@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useState } from "react";
+import CardBadge from "@/app/components/CardBadge";
 
 interface CardSummary {
   card_id: string;
@@ -12,15 +13,17 @@ interface CardSummary {
   image_url: string;
   availableCount: number;
   availableValue: number;
+  availableFreeNights: number;
 }
 
 interface Props {
   cards: CardSummary[];
   totalCards: number;
   totalAvailableValue: number;
+  totalAvailableFreeNights: number;
 }
 
-export default function DashboardClient({ cards, totalCards, totalAvailableValue }: Props) {
+export default function DashboardClient({ cards, totalCards, totalAvailableValue, totalAvailableFreeNights }: Props) {
   const router = useRouter();
   const supabase = createClient();
   const [removingCardId, setRemovingCardId] = useState<string | null>(null);
@@ -58,17 +61,25 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
   return (
     <div>
       {/* Summary Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      <div className={`grid grid-cols-1 ${totalAvailableFreeNights > 0 ? "sm:grid-cols-3" : "sm:grid-cols-2"} gap-4 mb-8`}>
         <div className="bg-card border border-border rounded-2xl p-6">
           <p className="text-sm text-muted-foreground font-medium">Tracked Cards</p>
           <p className="text-3xl font-bold text-foreground mt-1">{totalCards}</p>
         </div>
         <div className="bg-card border border-border rounded-2xl p-6">
-          <p className="text-sm text-muted-foreground font-medium">Available Benefits Value</p>
+          <p className="text-sm text-muted-foreground font-medium">Available Credits</p>
           <p className="text-3xl font-bold text-success mt-1">
             ${totalAvailableValue.toLocaleString()}
           </p>
         </div>
+        {totalAvailableFreeNights > 0 && (
+          <div className="bg-card border border-border rounded-2xl p-6">
+            <p className="text-sm text-muted-foreground font-medium">Available Free Nights</p>
+            <p className="text-3xl font-bold text-teal-600 dark:text-teal-400 mt-1">
+              {totalAvailableFreeNights}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Header + Add Button */}
@@ -87,19 +98,44 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
         {cards.map((card) => (
           <div
             key={card.card_id}
-            className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-md transition-shadow"
+            className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-md transition-shadow relative"
           >
-            <Link href={`/cards/${card.card_id}`} className="block p-5">
-              <div className="flex items-start gap-4">
-                <div className="w-14 h-9 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center text-xl shrink-0">
-                  💳
-                </div>
-                <div className="min-w-0">
+            {confirmCardId === card.card_id ? (
+              <div className="absolute top-2 right-2 flex items-center gap-1 z-10">
+                <button
+                  onClick={() => handleRemoveCard(card.card_id)}
+                  disabled={removingCardId === card.card_id}
+                  className="text-xs py-1 px-2 bg-destructive text-destructive-foreground rounded-md font-medium hover:opacity-90 disabled:opacity-50"
+                >
+                  {removingCardId === card.card_id ? "Removing…" : "Confirm"}
+                </button>
+                <button
+                  onClick={() => setConfirmCardId(null)}
+                  className="text-xs py-1 px-2 bg-secondary text-secondary-foreground rounded-md font-medium hover:opacity-80"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmCardId(card.card_id)}
+                className="absolute top-2 right-2 z-10 w-6 h-6 flex items-center justify-center rounded-full text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors"
+                title="Remove card"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+            <Link href={`/cards/${card.card_id}`} className="block px-4 py-4">
+              <div className="flex items-start gap-3">
+                <CardBadge cardName={card.card_name} />
+                <div className="min-w-0 pr-6">
                   <h3 className="font-semibold text-foreground truncate">{card.card_name}</h3>
                   <p className="text-sm text-muted-foreground">{card.card_issuer}</p>
                 </div>
               </div>
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
                 <div>
                   <p className="text-xs text-muted-foreground">Available</p>
                   <p className="text-sm font-semibold text-foreground">
@@ -108,36 +144,19 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-muted-foreground">Value</p>
-                  <p className="text-sm font-bold text-success">${card.availableValue}</p>
+                  {card.availableValue > 0 && card.availableFreeNights > 0 ? (
+                    <div>
+                      <p className="text-sm font-bold text-success">${card.availableValue}</p>
+                      <p className="text-xs font-semibold text-teal-600 dark:text-teal-400">+ {card.availableFreeNights} Free Night{card.availableFreeNights !== 1 ? "s" : ""}</p>
+                    </div>
+                  ) : card.availableFreeNights > 0 ? (
+                    <p className="text-sm font-bold text-teal-600 dark:text-teal-400">{card.availableFreeNights} Free Night{card.availableFreeNights !== 1 ? "s" : ""}</p>
+                  ) : (
+                    <p className="text-sm font-bold text-success">${card.availableValue}</p>
+                  )}
                 </div>
               </div>
             </Link>
-            <div className="px-5 pb-4">
-              {confirmCardId === card.card_id ? (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleRemoveCard(card.card_id)}
-                    disabled={removingCardId === card.card_id}
-                    className="flex-1 text-xs py-1.5 bg-destructive text-destructive-foreground rounded-lg font-medium hover:opacity-90 disabled:opacity-50"
-                  >
-                    {removingCardId === card.card_id ? "Removing…" : "Confirm Remove"}
-                  </button>
-                  <button
-                    onClick={() => setConfirmCardId(null)}
-                    className="flex-1 text-xs py-1.5 bg-secondary text-secondary-foreground rounded-lg font-medium hover:opacity-80"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setConfirmCardId(card.card_id)}
-                  className="w-full text-xs py-1.5 text-muted-foreground hover:text-destructive transition-colors"
-                >
-                  Remove Card
-                </button>
-              )}
-            </div>
           </div>
         ))}
       </div>
