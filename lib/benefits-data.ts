@@ -25,18 +25,32 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
 
   const { data: trackedCards } = await supabase
     .from("user_tracked_cards")
-    .select("card_id, dim_all_cards(card_id, card_name, card_issuer, image_url)")
+    .select("card_id, dim_all_cards(card_id, card_name, card_issuer, image_url, card_badge_acronym, card_badge_color)")
     .eq("user_id", user.id);
 
   const cardIds = (trackedCards ?? []).map((tc) => tc.card_id);
   if (cardIds.length === 0) {
-    return { userId: user.id, availableBenefits: [], usedBenefitGroups: [] };
+    return { userId: user.id, totalCards: 0, availableBenefits: [], usedBenefitGroups: [] };
   }
 
-  const cardNameMap = new Map<string, string>();
+  interface CardInfo {
+    card_name: string;
+    card_badge_acronym: string | null;
+    card_badge_color: string | null;
+  }
+  const cardInfoMap = new Map<string, CardInfo>();
   (trackedCards ?? []).forEach((tc) => {
-    const card = tc.dim_all_cards as unknown as { card_id: string; card_name: string };
-    cardNameMap.set(card.card_id, card.card_name);
+    const card = tc.dim_all_cards as unknown as {
+      card_id: string;
+      card_name: string;
+      card_badge_acronym: string | null;
+      card_badge_color: string | null;
+    };
+    cardInfoMap.set(card.card_id, {
+      card_name: card.card_name,
+      card_badge_acronym: card.card_badge_acronym,
+      card_badge_color: card.card_badge_color,
+    });
   });
 
   const { data: benefitsData } = await supabase
@@ -70,9 +84,12 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
     .map((b) => {
       const eligibleDate = getCurrentPeriodEligibleDate(b.frequency);
       const key = `${b.benefit_id}_${eligibleDate}`;
+      const info = cardInfoMap.get(b.card_id);
       return {
         ...b,
-        card_name: cardNameMap.get(b.card_id) ?? "",
+        card_name: info?.card_name ?? "",
+        card_badge_acronym: info?.card_badge_acronym ?? null,
+        card_badge_color: info?.card_badge_color ?? null,
         eligibleDate,
         periodLabel: getPeriodLabel(eligibleDate, b.frequency),
         isUsed: usedMap.has(key),
@@ -101,10 +118,13 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
           canUndo: !!usage && !p.isFuture,
         };
       });
+      const info = cardInfoMap.get(b.card_id);
       return {
         benefit_id: b.benefit_id,
         card_id: b.card_id,
-        card_name: cardNameMap.get(b.card_id) ?? "",
+        card_name: info?.card_name ?? "",
+        card_badge_acronym: info?.card_badge_acronym ?? null,
+        card_badge_color: info?.card_badge_color ?? null,
         benefit_description: b.benefit_description,
         benefit_category: b.benefit_category,
         benefit_type: b.benefit_type,
@@ -117,5 +137,5 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
       };
     });
 
-  return { userId: user.id, availableBenefits, usedBenefitGroups };
+  return { userId: user.id, totalCards: cardIds.length, availableBenefits, usedBenefitGroups };
 }

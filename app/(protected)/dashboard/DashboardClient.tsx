@@ -11,6 +11,8 @@ interface CardSummary {
   card_name: string;
   card_issuer: string;
   image_url: string;
+  card_badge_acronym?: string | null;
+  card_badge_color?: string | null;
   availableCount: number;
   availableValue: number;
   availableFreeNights: number;
@@ -75,7 +77,7 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
         {totalAvailableFreeNights > 0 && (
           <div className="bg-card border border-border rounded-2xl p-6">
             <p className="text-sm text-muted-foreground font-medium">Available Free Nights</p>
-            <p className="text-3xl font-bold text-teal-600 dark:text-teal-400 mt-1">
+            <p className="text-3xl font-bold text-success mt-1">
               {totalAvailableFreeNights}
             </p>
           </div>
@@ -100,23 +102,27 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
             key={card.card_id}
             className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-md transition-shadow relative"
           >
-            {confirmCardId === card.card_id ? (
-              <div className="absolute top-2 right-2 flex items-center gap-1 z-10">
-                <button
-                  onClick={() => handleRemoveCard(card.card_id)}
-                  disabled={removingCardId === card.card_id}
-                  className="text-xs py-1 px-2 bg-destructive text-destructive-foreground rounded-md font-medium hover:opacity-90 disabled:opacity-50"
-                >
-                  {removingCardId === card.card_id ? "Removing…" : "Confirm"}
-                </button>
-                <button
-                  onClick={() => setConfirmCardId(null)}
-                  className="text-xs py-1 px-2 bg-secondary text-secondary-foreground rounded-md font-medium hover:opacity-80"
-                >
-                  Cancel
-                </button>
+            {confirmCardId === card.card_id && (
+              <div className="absolute inset-0 z-10 bg-card/95 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center gap-3">
+                <p className="text-sm font-medium text-foreground">Remove this card?</p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleRemoveCard(card.card_id)}
+                    disabled={removingCardId === card.card_id}
+                    className="text-sm py-1.5 px-4 bg-destructive text-destructive-foreground rounded-lg font-medium hover:opacity-90 disabled:opacity-50"
+                  >
+                    {removingCardId === card.card_id ? "Removing…" : "Remove"}
+                  </button>
+                  <button
+                    onClick={() => setConfirmCardId(null)}
+                    className="text-sm py-1.5 px-4 bg-secondary text-secondary-foreground rounded-lg font-medium hover:opacity-80"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
-            ) : (
+            )}
+            {!confirmCardId || confirmCardId !== card.card_id ? (
               <button
                 onClick={() => setConfirmCardId(card.card_id)}
                 className="absolute top-2 right-2 z-10 w-6 h-6 flex items-center justify-center rounded-full text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors"
@@ -126,10 +132,10 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-            )}
+            ) : null}
             <Link href={`/cards/${card.card_id}`} className="block px-4 py-4">
               <div className="flex items-center gap-3">
-                <CardBadge cardName={card.card_name} />
+                <CardBadge cardName={card.card_name} acronym={card.card_badge_acronym} color={card.card_badge_color} />
                 <div className="min-w-0 pr-6">
                   <h3 className="font-semibold text-foreground truncate">{card.card_name}</h3>
                 </div>
@@ -146,10 +152,10 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
                   {card.availableValue > 0 && card.availableFreeNights > 0 ? (
                     <div>
                       <p className="text-sm font-bold text-success">${card.availableValue}</p>
-                      <p className="text-xs font-semibold text-teal-600 dark:text-teal-400">+ {card.availableFreeNights} Free Night{card.availableFreeNights !== 1 ? "s" : ""}</p>
+                      <p className="text-xs font-semibold text-success">+ {card.availableFreeNights} Free Night{card.availableFreeNights !== 1 ? "s" : ""}</p>
                     </div>
                   ) : card.availableFreeNights > 0 ? (
-                    <p className="text-sm font-bold text-teal-600 dark:text-teal-400">{card.availableFreeNights} Free Night{card.availableFreeNights !== 1 ? "s" : ""}</p>
+                    <p className="text-sm font-bold text-success">{card.availableFreeNights} Free Night{card.availableFreeNights !== 1 ? "s" : ""}</p>
                   ) : (
                     <p className="text-sm font-bold text-success">${card.availableValue}</p>
                   )}

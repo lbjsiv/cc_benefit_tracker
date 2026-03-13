@@ -23,6 +23,9 @@ interface CardInput {
   card_name: string;
   card_issuer: string;
   image_url: string;
+  card_points_multipliers: string;
+  card_badge_acronym: string;
+  card_badge_color: string;
   benefits: BenefitInput[];
 }
 
@@ -32,6 +35,9 @@ const cards: CardInput[] = [
     card_name: "Amex Platinum",
     card_issuer: "American Express",
     image_url: "/cards/amex-platinum.png",
+    card_points_multipliers: "5X Flights (direct or Amex Travel) · 5X Hotels (Amex Travel)",
+    card_badge_acronym: "AP",
+    card_badge_color: "#64748b",
     benefits: [
       {
         benefit_description: "$15 Uber Cash Monthly Credit",
@@ -39,7 +45,7 @@ const cards: CardInput[] = [
         benefit_type: "credit",
         value: 15,
         frequency: "monthly",
-        benefit_notes: "Uber & Uber Eats in the U.S. $35 in December ($15 + $20 bonus).",
+        benefit_notes: "U.S. Uber/Uber Eats. $20 bonus in December.",
       },
       {
         benefit_description: "$25 Digital Entertainment Credit",
@@ -47,15 +53,7 @@ const cards: CardInput[] = [
         benefit_type: "credit",
         value: 25,
         frequency: "monthly",
-        benefit_notes: "Disney+, Hulu, ESPN+, Peacock, Paramount+, NYT, WSJ, YouTube Premium, YouTube TV.",
-      },
-      {
-        benefit_description: "$12.95 Walmart+ Monthly Credit",
-        benefit_category: "Shopping",
-        benefit_type: "credit",
-        value: 12.95,
-        frequency: "monthly",
-        benefit_notes: "Covers Walmart+ monthly membership fee (auto-renewal).",
+        benefit_notes: "Disney+, Hulu, ESPN+, Peacock, Paramount+, NYT, WSJ, YouTube.",
       },
       {
         benefit_description: "$50 Saks Fifth Avenue Credit",
@@ -63,23 +61,7 @@ const cards: CardInput[] = [
         benefit_type: "credit",
         value: 50,
         frequency: "half-yearly",
-        benefit_notes: "Saks.com and Saks Fifth Avenue stores. Resets Jan–Jun and Jul–Dec.",
-      },
-      {
-        benefit_description: "$100 Resy Dining Credit",
-        benefit_category: "Dining",
-        benefit_type: "credit",
-        value: 100,
-        frequency: "quarterly",
-        benefit_notes: "Eligible U.S. restaurants on Resy. Must enroll.",
-      },
-      {
-        benefit_description: "$75 lululemon Credit",
-        benefit_category: "Shopping",
-        benefit_type: "credit",
-        value: 75,
-        frequency: "quarterly",
-        benefit_notes: "U.S. lululemon stores (excl. outlets) and lululemon.com.",
+        benefit_notes: "$50 for Jan-Jun & $50 for Jul-Dec.",
       },
       {
         benefit_description: "$200 Airline Fee Credit",
@@ -87,15 +69,7 @@ const cards: CardInput[] = [
         benefit_type: "credit",
         value: 200,
         frequency: "yearly",
-        benefit_notes: "Incidental fees only (bags, seat upgrades, etc.). Select one airline per calendar year.",
-      },
-      {
-        benefit_description: "$209 CLEAR+ Credit",
-        benefit_category: "Travel",
-        benefit_type: "credit",
-        value: 209,
-        frequency: "yearly",
-        benefit_notes: "CLEAR+ membership auto-renewal. Must enroll.",
+        benefit_notes: "Incidental fees on one selected airline.",
       },
       {
         benefit_description: "$200 Hotel Credit",
@@ -103,7 +77,7 @@ const cards: CardInput[] = [
         benefit_type: "credit",
         value: 200,
         frequency: "yearly",
-        benefit_notes: "Prepaid hotels booked through American Express Travel.",
+        benefit_notes: "Prepaid FHR or The Hotel Collection bookings via Amex Travel.",
       },
       {
         benefit_description: "$300 Equinox Credit",
@@ -111,7 +85,7 @@ const cards: CardInput[] = [
         benefit_type: "credit",
         value: 300,
         frequency: "yearly",
-        benefit_notes: "Equinox+ digital fitness or Equinox club membership (auto-renewal).",
+        benefit_notes: "Equinox+ digital or club membership.",
       },
     ],
   },
@@ -120,6 +94,9 @@ const cards: CardInput[] = [
     card_name: "Chase Sapphire Reserve",
     card_issuer: "Chase",
     image_url: "/cards/chase-sapphire-reserve.png",
+    card_points_multipliers: "10X Hotels & Cars (Chase Travel) · 10X Chase Dining · 5X Flights (Chase Travel) · 3X Dining · 3X Travel",
+    card_badge_acronym: "CSR",
+    card_badge_color: "#1e3a8a",
     benefits: [
       {
         benefit_description: "$300 Annual Travel Credit",
@@ -127,39 +104,15 @@ const cards: CardInput[] = [
         benefit_type: "credit",
         value: 300,
         frequency: "yearly",
-        benefit_notes: "Auto-applied to travel: flights, hotels, car rentals, tolls, transit, parking, and more.",
+        benefit_notes: "Auto-applied to broad travel purchases.",
       },
       {
-        benefit_description: "$5 DoorDash Monthly Credit",
-        benefit_category: "Dining",
-        benefit_type: "credit",
-        value: 5,
-        frequency: "monthly",
-        benefit_notes: "DoorDash and Caviar orders. Must add card to DoorDash account.",
-      },
-      {
-        benefit_description: "$10 Lyft Monthly Credit",
-        benefit_category: "Travel",
-        benefit_type: "credit",
-        value: 10,
-        frequency: "monthly",
-        benefit_notes: "Lyft rides. Includes complimentary Lyft Pink membership.",
-      },
-      {
-        benefit_description: "$15 Instacart+ Monthly Credit",
+        benefit_description: "$15 Instacart Monthly Credit",
         benefit_category: "Shopping",
         benefit_type: "credit",
         value: 15,
         frequency: "monthly",
-        benefit_notes: "Instacart orders. Includes complimentary Instacart+ membership.",
-      },
-      {
-        benefit_description: "$10 Gopuff Monthly Credit",
-        benefit_category: "Shopping",
-        benefit_type: "credit",
-        value: 10,
-        frequency: "monthly",
-        benefit_notes: "Gopuff delivery orders. Must add card to Gopuff account.",
+        benefit_notes: "Statement credit for Instacart purchases.",
       },
     ],
   },
@@ -168,6 +121,9 @@ const cards: CardInput[] = [
     card_name: "Chase Sapphire Preferred",
     card_issuer: "Chase",
     image_url: "/cards/chase-sapphire-preferred.png",
+    card_points_multipliers: "5X Travel (Chase Travel) · 3X Dining · 3X Online grocery · 3X Streaming · 2X Travel",
+    card_badge_acronym: "CSP",
+    card_badge_color: "#2563eb",
     benefits: [
       {
         benefit_description: "$50 Annual Hotel Credit",
@@ -175,15 +131,7 @@ const cards: CardInput[] = [
         benefit_type: "credit",
         value: 50,
         frequency: "yearly",
-        benefit_notes: "Hotel stays booked through Chase Travel portal.",
-      },
-      {
-        benefit_description: "$5 DoorDash Monthly Credit",
-        benefit_category: "Dining",
-        benefit_type: "credit",
-        value: 5,
-        frequency: "monthly",
-        benefit_notes: "DoorDash and Caviar orders. Must add card to DoorDash account.",
+        benefit_notes: "Hotels booked through the Chase Travel portal.",
       },
     ],
   },
@@ -192,6 +140,9 @@ const cards: CardInput[] = [
     card_name: "Chase IHG One Rewards Premier",
     card_issuer: "Chase",
     image_url: "/cards/chase-ihg-premier.png",
+    card_points_multipliers: "Up to 26X IHG · 5X Travel, dining & gas",
+    card_badge_acronym: "IHG",
+    card_badge_color: "#15803d",
     benefits: [
       {
         benefit_description: "Free Night Certificate",
@@ -199,7 +150,7 @@ const cards: CardInput[] = [
         benefit_type: "free_night",
         value: 0,
         frequency: "yearly",
-        benefit_notes: "Valid at IHG hotels up to 40,000 points per night. Awarded on account anniversary.",
+        benefit_notes: "Valid at IHG hotels for 40,000 points/night.",
       },
     ],
   },
@@ -208,6 +159,9 @@ const cards: CardInput[] = [
     card_name: "Chase Marriott Bonvoy Boundless",
     card_issuer: "Chase",
     image_url: "/cards/chase-marriott-boundless.png",
+    card_points_multipliers: "Up to 17X Marriott · 3X Gas, groceries & dining (on first $6k/yr) · 2X Other Travel",
+    card_badge_acronym: "MBB",
+    card_badge_color: "#991b1b",
     benefits: [
       {
         benefit_description: "Free Night Award",
@@ -215,7 +169,61 @@ const cards: CardInput[] = [
         benefit_type: "free_night",
         value: 0,
         frequency: "yearly",
-        benefit_notes: "Valid at Marriott properties up to 35,000 points per night. Awarded on account anniversary.",
+        benefit_notes: "Valid at Marriott properties for 35,000 points/night.",
+      },
+    ],
+  },
+  {
+    card_id: "a1b2c3d4-0007-4000-8000-000000000007",
+    card_name: "Amex Hilton Aspire",
+    card_issuer: "American Express",
+    image_url: "/cards/amex-hilton-aspire.png",
+    card_points_multipliers: "14X Hilton · 7X Flights, car rentals & U.S. restaurants",
+    card_badge_acronym: "HAS",
+    card_badge_color: "#5b21b6",
+    benefits: [
+      {
+        benefit_description: "$400 Hilton Resort Credit",
+        benefit_category: "Travel",
+        benefit_type: "credit",
+        value: 200,
+        frequency: "half-yearly",
+        benefit_notes: "$200 in statement credits semi-annually at participating Hilton Resorts.",
+      },
+      {
+        benefit_description: "$200 Flight Credit",
+        benefit_category: "Travel",
+        benefit_type: "credit",
+        value: 50,
+        frequency: "quarterly",
+        benefit_notes: "$50 per quarter for flights booked with airlines or amextravel.com.",
+      },
+      {
+        benefit_description: "Annual Free Night Reward",
+        benefit_category: "Travel",
+        benefit_type: "free_night",
+        value: 0,
+        frequency: "yearly",
+        benefit_notes: "One free night at a Hilton property.",
+      },
+    ],
+  },
+  {
+    card_id: "a1b2c3d4-0006-4000-8000-000000000006",
+    card_name: "Chase World of Hyatt",
+    card_issuer: "Chase",
+    image_url: "/cards/chase-world-of-hyatt.png",
+    card_points_multipliers: "Up to 9X Hyatt · 2X Dining, flights, local transit & gyms",
+    card_badge_acronym: "WoH",
+    card_badge_color: "#c2410c",
+    benefits: [
+      {
+        benefit_description: "Category 1-4 Hyatt Free Night",
+        benefit_category: "Travel",
+        benefit_type: "free_night",
+        value: 0,
+        frequency: "yearly",
+        benefit_notes: "One free night at any Category 1-4 Hyatt hotel each anniversary year.",
       },
     ],
   },

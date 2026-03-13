@@ -10,7 +10,7 @@ export default async function DashboardPage() {
 
   const { data: trackedCards } = await supabase
     .from("user_tracked_cards")
-    .select("card_id, dim_all_cards(card_id, card_name, card_issuer, image_url)")
+    .select("card_id, dim_all_cards(card_id, card_name, card_issuer, image_url, card_badge_acronym, card_badge_color)")
     .eq("user_id", user.id);
 
   const cardIds = trackedCards?.map((tc) => tc.card_id) ?? [];
@@ -48,6 +48,8 @@ export default async function DashboardPage() {
       card_name: string;
       card_issuer: string;
       image_url: string;
+      card_badge_acronym: string | null;
+      card_badge_color: string | null;
     };
 
     const cardBenefits = benefits.filter((b) => b.card_id === tc.card_id);
@@ -73,6 +75,8 @@ export default async function DashboardPage() {
       card_name: card.card_name,
       card_issuer: card.card_issuer,
       image_url: card.image_url,
+      card_badge_acronym: card.card_badge_acronym,
+      card_badge_color: card.card_badge_color,
       availableCount,
       availableValue,
       availableFreeNights,

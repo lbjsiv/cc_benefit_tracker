@@ -10,6 +10,8 @@ interface Card {
   card_name: string;
   card_issuer: string;
   image_url: string;
+  card_badge_acronym?: string | null;
+  card_badge_color?: string | null;
   isTracked: boolean;
 }
 
@@ -54,6 +56,12 @@ export default function CardsLibraryClient({ cards, userId }: Props) {
   return (
     <div>
       <div className="mb-8">
+        <button
+          onClick={() => router.back()}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors mb-4 inline-block"
+        >
+          ← Back
+        </button>
         <h1 className="text-2xl font-bold text-foreground mb-1">Card Library</h1>
         <p className="text-muted-foreground text-sm">
           Discover credit cards and add them to your dashboard
@@ -83,7 +91,7 @@ export default function CardsLibraryClient({ cards, userId }: Props) {
               }`}
             >
               <div className="flex items-center gap-4 mb-4">
-                <CardBadge cardName={card.card_name} />
+                <CardBadge cardName={card.card_name} acronym={card.card_badge_acronym} color={card.card_badge_color} />
                 <div className="min-w-0">
                   <h3 className="font-semibold text-foreground truncate">{card.card_name}</h3>
                 </div>

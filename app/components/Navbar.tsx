@@ -45,10 +45,10 @@ export default function Navbar() {
               My Cards
             </Link>
             <Link href="/credit-benefits" className={linkClass("/credit-benefits")}>
-              All Credits
+              My Credits
             </Link>
             <Link href="/free-nights" className={linkClass("/free-nights")}>
-              All Free Nights
+              My Free Nights
             </Link>
           </div>
           <div className="flex items-center gap-4">

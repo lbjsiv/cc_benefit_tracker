@@ -4,43 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { getCurrentPeriodEligibleDate, generateYearPeriods, type PeriodDot, type Frequency, type BenefitType } from "@/lib/benefits";
+import { getCurrentPeriodEligibleDate, generateYearPeriods, type PeriodDot, type Frequency } from "@/lib/benefits";
+import type { AvailableBenefit, UsedBenefitGroup, Card } from "@/lib/types";
 import CardBadge from "@/app/components/CardBadge";
-import { getCardConfig } from "@/lib/card-config";
-
-interface AvailableBenefit {
-  benefit_id: string;
-  card_id: string;
-  benefit_description: string;
-  benefit_category: string;
-  benefit_type: BenefitType;
-  value: number;
-  frequency: string;
-  benefit_notes?: string | null;
-  eligibleDate: string;
-  periodLabel: string;
-}
-
-interface UsedBenefitGroup {
-  benefit_id: string;
-  card_id: string;
-  benefit_description: string;
-  benefit_category: string;
-  benefit_type: BenefitType;
-  value: number;
-  frequency: string;
-  benefit_notes?: string | null;
-  usedCount: number;
-  totalPeriods: number;
-  periods: PeriodDot[];
-}
-
-interface Card {
-  card_id: string;
-  card_name: string;
-  card_issuer: string;
-  image_url: string;
-}
+import CategoryBadge from "@/app/components/CategoryBadge";
+import PeriodDots from "@/app/components/PeriodDots";
 
 interface Props {
   card: Card;
@@ -48,16 +16,6 @@ interface Props {
   availableBenefits: AvailableBenefit[];
   usedBenefitGroups: UsedBenefitGroup[];
 }
-
-const categoryColors: Record<string, string> = {
-  Travel: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-  Dining: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
-  Shopping: "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300",
-  Entertainment: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
-  Rewards: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
-  Hotel: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300",
-  Fitness: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
-};
 
 export default function BenefitDetailClient({ card, userId, availableBenefits, usedBenefitGroups }: Props) {
   const router = useRouter();
@@ -73,7 +31,6 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
 
     setAvailable((prev) => prev.filter((b) => b.benefit_id !== benefit.benefit_id));
 
-    // Update the group if it exists, otherwise create a new group entry
     setGroups((prev) => {
       const existing = prev.find((g) => g.benefit_id === benefit.benefit_id);
       if (existing) {
@@ -91,7 +48,6 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
             : g
         );
       }
-      // Benefit not yet in groups — create a new group with period dots
       const freq = benefit.frequency as Frequency;
       const periods = generateYearPeriods(freq, currentYear).map((p) => ({
         ...p,
@@ -152,7 +108,6 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
     const tempId = crypto.randomUUID();
     setActionInProgress(tempId);
 
-    // Optimistic: fill the dot
     setGroups((prev) =>
       prev.map((g) =>
         g.benefit_id === group.benefit_id
@@ -169,7 +124,6 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
       )
     );
 
-    // Remove from available if it matches the current period
     setAvailable((prev) =>
       prev.filter((a) => !(a.benefit_id === group.benefit_id && a.eligibleDate === period.eligible_date))
     );
@@ -182,7 +136,6 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
     });
 
     if (error) {
-      // Revert
       setGroups((prev) =>
         prev.map((g) =>
           g.benefit_id === group.benefit_id
@@ -208,7 +161,6 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
     if (!period.used_benefit_id) return;
     setActionInProgress(period.used_benefit_id);
 
-    // Optimistic: unmark the dot
     setGroups((prev) =>
       prev.map((g) =>
         g.benefit_id === group.benefit_id
@@ -225,7 +177,6 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
       )
     );
 
-    // Only restore to available if it's the current period
     const isCurrentPeriod = period.eligible_date === getCurrentPeriodEligibleDate(group.frequency as Frequency);
     if (isCurrentPeriod) {
       const restored: AvailableBenefit = {
@@ -250,7 +201,6 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
       .eq("eligible_date", period.eligible_date);
 
     if (error) {
-      // Revert
       setGroups((prev) =>
         prev.map((g) =>
           g.benefit_id === group.benefit_id
@@ -290,18 +240,14 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
           ← Back to My Cards
         </Link>
         <div className="flex items-center gap-4">
-          <CardBadge cardName={card.card_name} size="lg" />
+          <CardBadge cardName={card.card_name} acronym={card.card_badge_acronym} color={card.card_badge_color} size="lg" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">{card.card_name}</h1>
-            {(() => {
-              const config = getCardConfig(card.card_name);
-              if (!config) return null;
-              return (
-                <p className="text-xs text-muted-foreground mt-1">
-                  {config.multipliers.map((m) => `${m.multiplier} ${m.category}`).join(" · ")}
-                </p>
-              );
-            })()}
+            {card.card_points_multipliers && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {card.card_points_multipliers}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -340,13 +286,7 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                          categoryColors[benefit.benefit_category] ?? "bg-secondary text-secondary-foreground"
-                        }`}
-                      >
-                        {benefit.benefit_category}
-                      </span>
+                      <CategoryBadge category={benefit.benefit_category} />
                       <span className="text-xs text-muted-foreground">{benefit.periodLabel}</span>
                     </div>
                     <p className="font-medium text-foreground text-sm">{benefit.benefit_description}</p>
@@ -354,7 +294,7 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
                       <p className="text-xs text-muted-foreground mt-0.5">{benefit.benefit_notes}</p>
                     )}
                     {benefit.benefit_type === "free_night" ? (
-                      <p className="text-teal-600 dark:text-teal-400 font-bold text-sm mt-0.5">Free Night</p>
+                      <p className="text-success font-bold text-sm mt-0.5">Free Night</p>
                     ) : (
                       <p className="text-success font-bold text-sm mt-0.5">${Number(benefit.value).toLocaleString()}</p>
                     )}
@@ -403,13 +343,7 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
               {activeGroups.map((group) => (
                 <div key={group.benefit_id} className="bg-card border border-border rounded-2xl p-4">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                        categoryColors[group.benefit_category] ?? "bg-secondary text-secondary-foreground"
-                      }`}
-                    >
-                      {group.benefit_category}
-                    </span>
+                    <CategoryBadge category={group.benefit_category} />
                     <span className="text-xs text-muted-foreground">
                       {group.usedCount}/{group.totalPeriods} used
                     </span>
@@ -424,60 +358,11 @@ export default function BenefitDetailClient({ card, userId, availableBenefits, u
                       : `$${Number(group.value).toLocaleString()} per ${group.frequency === "half-yearly" ? "half" : group.frequency.replace("ly", "")}`}
                   </p>
 
-                  {/* Period Dots */}
-                  <div className="mt-3 flex items-end gap-1 flex-wrap">
-                    {group.periods.map((period) => (
-                      <div key={period.eligible_date} className="flex flex-col items-center gap-1">
-                        {period.isUsed ? (
-                          <div className="relative group">
-                            <div
-                              className={`w-5 h-5 rounded-full flex items-center justify-center bg-success ${
-                                period.canUndo ? "cursor-pointer hover:bg-success/70 transition-colors" : ""
-                              }`}
-                              onClick={() => period.canUndo && undoPeriod(group, period)}
-                              title={
-                                period.canUndo
-                                  ? `Used ${new Date(period.used_at!).toLocaleDateString()} — click to undo`
-                                  : `Used ${new Date(period.used_at!).toLocaleDateString()}`
-                              }
-                            >
-                              <svg className="w-3 h-3 text-success-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </div>
-                            {period.canUndo && (
-                              <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] bg-foreground text-background px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                Undo
-                              </span>
-                            )}
-                          </div>
-                        ) : period.isFuture ? (
-                          <div
-                            className="w-5 h-5 rounded-full border-2 border-border/50"
-                            title={`${period.label} (upcoming)`}
-                          />
-                        ) : (
-                          <div className="relative group">
-                            <div
-                              className="w-5 h-5 rounded-full border-2 border-muted-foreground/30 cursor-pointer hover:border-success hover:bg-success/10 transition-all"
-                              onClick={() => markPeriodUsed(group, period)}
-                              title={`${period.label} — click to mark as used`}
-                            />
-                            <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] bg-foreground text-background px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                              Mark used
-                            </span>
-                          </div>
-                        )}
-                        <span
-                          className={`text-[10px] leading-none ${
-                            period.isFuture ? "text-muted-foreground/40" : "text-muted-foreground"
-                          }`}
-                        >
-                          {period.label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  <PeriodDots
+                    periods={group.periods}
+                    onMarkUsed={(period) => markPeriodUsed(group, period)}
+                    onUndo={(period) => undoPeriod(group, period)}
+                  />
                 </div>
               ))}
             </div>

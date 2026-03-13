@@ -3,37 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { getCurrentPeriodEligibleDate, generateYearPeriods, type PeriodDot, type Frequency, type BenefitType } from "@/lib/benefits";
+import { getCurrentPeriodEligibleDate, generateYearPeriods, type PeriodDot, type Frequency } from "@/lib/benefits";
+import type { AvailableBenefit, UsedBenefitGroup } from "@/lib/types";
 import CardBadge from "@/app/components/CardBadge";
-
-interface AvailableBenefit {
-  benefit_id: string;
-  card_id: string;
-  card_name: string;
-  benefit_description: string;
-  benefit_category: string;
-  benefit_type: BenefitType;
-  value: number;
-  frequency: string;
-  benefit_notes?: string | null;
-  eligibleDate: string;
-  periodLabel: string;
-}
-
-interface UsedBenefitGroup {
-  benefit_id: string;
-  card_id: string;
-  card_name: string;
-  benefit_description: string;
-  benefit_category: string;
-  benefit_type: BenefitType;
-  value: number;
-  frequency: string;
-  benefit_notes?: string | null;
-  usedCount: number;
-  totalPeriods: number;
-  periods: PeriodDot[];
-}
+import CategoryBadge from "@/app/components/CategoryBadge";
+import PeriodDots from "@/app/components/PeriodDots";
 
 interface Props {
   title: string;
@@ -43,16 +17,6 @@ interface Props {
   usedBenefitGroups: UsedBenefitGroup[];
   mode: "credit" | "free_night";
 }
-
-const categoryColors: Record<string, string> = {
-  Travel: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-  Dining: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
-  Shopping: "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300",
-  Entertainment: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
-  Rewards: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
-  Hotel: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300",
-  Fitness: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
-};
 
 export default function CombinedBenefitsClient({ title, subtitle, userId, availableBenefits, usedBenefitGroups, mode }: Props) {
   const router = useRouter();
@@ -98,6 +62,8 @@ export default function CombinedBenefitsClient({ title, subtitle, userId, availa
           benefit_id: benefit.benefit_id,
           card_id: benefit.card_id,
           card_name: benefit.card_name,
+          card_badge_acronym: benefit.card_badge_acronym,
+          card_badge_color: benefit.card_badge_color,
           benefit_description: benefit.benefit_description,
           benefit_category: benefit.benefit_category,
           benefit_type: benefit.benefit_type,
@@ -220,6 +186,8 @@ export default function CombinedBenefitsClient({ title, subtitle, userId, availa
         benefit_id: group.benefit_id,
         card_id: group.card_id,
         card_name: group.card_name,
+        card_badge_acronym: group.card_badge_acronym,
+        card_badge_color: group.card_badge_color,
         benefit_description: group.benefit_description,
         benefit_category: group.benefit_category,
         benefit_type: group.benefit_type,
@@ -313,14 +281,8 @@ export default function CombinedBenefitsClient({ title, subtitle, userId, availa
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <CardBadge cardName={benefit.card_name} size="sm" />
-                      <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                          categoryColors[benefit.benefit_category] ?? "bg-secondary text-secondary-foreground"
-                        }`}
-                      >
-                        {benefit.benefit_category}
-                      </span>
+                      <CardBadge cardName={benefit.card_name ?? ""} acronym={benefit.card_badge_acronym} color={benefit.card_badge_color} size="sm" />
+                      <CategoryBadge category={benefit.benefit_category} />
                       <span className="text-xs text-muted-foreground">{benefit.periodLabel}</span>
                     </div>
                     <p className="font-medium text-foreground text-sm">{benefit.benefit_description}</p>
@@ -330,7 +292,7 @@ export default function CombinedBenefitsClient({ title, subtitle, userId, availa
                     {isCredit ? (
                       <p className="text-success font-bold text-sm mt-0.5">${Number(benefit.value).toLocaleString()}</p>
                     ) : (
-                      <p className="text-teal-600 dark:text-teal-400 font-bold text-sm mt-0.5">Free Night</p>
+                      <p className="text-success font-bold text-sm mt-0.5">Free Night</p>
                     )}
                   </div>
                   <button
@@ -378,14 +340,8 @@ export default function CombinedBenefitsClient({ title, subtitle, userId, availa
               {activeGroups.map((group) => (
                 <div key={group.benefit_id} className="bg-card border border-border rounded-2xl p-4">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <CardBadge cardName={group.card_name} size="sm" />
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                        categoryColors[group.benefit_category] ?? "bg-secondary text-secondary-foreground"
-                      }`}
-                    >
-                      {group.benefit_category}
-                    </span>
+                    <CardBadge cardName={group.card_name ?? ""} acronym={group.card_badge_acronym} color={group.card_badge_color} size="sm" />
+                    <CategoryBadge category={group.benefit_category} />
                     <span className="text-xs text-muted-foreground">
                       {group.usedCount}/{group.totalPeriods} used
                     </span>
@@ -400,59 +356,11 @@ export default function CombinedBenefitsClient({ title, subtitle, userId, availa
                       : `Free Night · ${group.frequency}`}
                   </p>
 
-                  <div className="mt-3 flex items-end gap-1 flex-wrap">
-                    {group.periods.map((period) => (
-                      <div key={period.eligible_date} className="flex flex-col items-center gap-1">
-                        {period.isUsed ? (
-                          <div className="relative group">
-                            <div
-                              className={`w-5 h-5 rounded-full flex items-center justify-center bg-success ${
-                                period.canUndo ? "cursor-pointer hover:bg-success/70 transition-colors" : ""
-                              }`}
-                              onClick={() => period.canUndo && undoPeriod(group, period)}
-                              title={
-                                period.canUndo
-                                  ? `Used ${new Date(period.used_at!).toLocaleDateString()} — click to undo`
-                                  : `Used ${new Date(period.used_at!).toLocaleDateString()}`
-                              }
-                            >
-                              <svg className="w-3 h-3 text-success-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </div>
-                            {period.canUndo && (
-                              <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] bg-foreground text-background px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                Undo
-                              </span>
-                            )}
-                          </div>
-                        ) : period.isFuture ? (
-                          <div
-                            className="w-5 h-5 rounded-full border-2 border-border/50"
-                            title={`${period.label} (upcoming)`}
-                          />
-                        ) : (
-                          <div className="relative group">
-                            <div
-                              className="w-5 h-5 rounded-full border-2 border-muted-foreground/30 cursor-pointer hover:border-success hover:bg-success/10 transition-all"
-                              onClick={() => markPeriodUsed(group, period)}
-                              title={`${period.label} — click to mark as used`}
-                            />
-                            <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] bg-foreground text-background px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                              Mark used
-                            </span>
-                          </div>
-                        )}
-                        <span
-                          className={`text-[10px] leading-none ${
-                            period.isFuture ? "text-muted-foreground/40" : "text-muted-foreground"
-                          }`}
-                        >
-                          {period.label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  <PeriodDots
+                    periods={group.periods}
+                    onMarkUsed={(period) => markPeriodUsed(group, period)}
+                    onUndo={(period) => undoPeriod(group, period)}
+                  />
                 </div>
               ))}
             </div>

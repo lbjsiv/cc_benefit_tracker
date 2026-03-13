@@ -12,7 +12,10 @@ CREATE TABLE dim_all_cards (
   card_id    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   card_name  TEXT NOT NULL,
   card_issuer TEXT,
-  image_url  TEXT
+  image_url  TEXT,
+  card_points_multipliers TEXT,
+  card_badge_acronym TEXT,
+  card_badge_color TEXT
 );
 
 -- 3. card_benefits — benefits per card
