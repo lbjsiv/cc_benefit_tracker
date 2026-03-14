@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import CardBadge from "@/app/components/CardBadge";
+import EmptyState from "@/app/components/EmptyState";
 
 export default async function AnnualFeesPage() {
   const supabase = await createClient();
@@ -30,21 +31,7 @@ export default async function AnnualFeesPage() {
   const totalAnnualFees = cards.reduce((sum, c) => sum + (c.card_annual_fee ?? 0), 0);
 
   if (cards.length === 0) {
-    return (
-      <div className="text-center py-20">
-        <div className="text-6xl mb-4">💳</div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">No cards tracked yet</h2>
-        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-          Start by adding your first credit card to track its benefits and annual fees.
-        </p>
-        <Link
-          href="/cards"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity"
-        >
-          + Add Your First Card
-        </Link>
-      </div>
-    );
+    return <EmptyState />;
   }
 
   return (

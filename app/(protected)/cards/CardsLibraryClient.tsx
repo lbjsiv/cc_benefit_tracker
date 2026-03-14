@@ -113,7 +113,7 @@ export default function CardsLibraryClient({ cards, userId }: Props) {
                 <button
                   onClick={() => handleAddCard(card.card_id)}
                   disabled={addingCardId === card.card_id}
-                  className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+                  className="w-full py-2 px-4 bg-primary/10 text-primary rounded-xl text-sm font-semibold hover:bg-primary/20 active:scale-95 transition-all disabled:opacity-50"
                 >
                   {addingCardId === card.card_id ? "Adding…" : "Start Tracking"}
                 </button>

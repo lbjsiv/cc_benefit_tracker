@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useState } from "react";
 import { getNow } from "@/lib/benefits";
 import CardBadge from "@/app/components/CardBadge";
+import EmptyState from "@/app/components/EmptyState";
 
 interface CardSummary {
   card_id: string;
@@ -41,6 +42,10 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
   const handleRemoveCard = async (cardId: string) => {
     setRemovingCardId(cardId);
     await supabase
+      .from("user_used_benefits")
+      .delete()
+      .eq("card_id", cardId);
+    await supabase
       .from("user_tracked_cards")
       .delete()
       .eq("card_id", cardId);
@@ -50,21 +55,7 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
   };
 
   if (totalCards === 0) {
-    return (
-      <div className="text-center py-20">
-        <div className="text-6xl mb-4">💳</div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">No cards tracked yet</h2>
-        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-          Start by adding your first credit card to track its benefits and never miss a perk again.
-        </p>
-        <Link
-          href="/cards"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity"
-        >
-          + Add Your First Card
-        </Link>
-      </div>
-    );
+    return <EmptyState />;
   }
 
   return (
@@ -106,9 +97,10 @@ export default function DashboardClient({ cards, totalCards, totalAvailableValue
         <h2 className="text-xl font-bold text-foreground">My Cards</h2>
         <Link
           href="/cards"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-base hover:opacity-90 transition-opacity"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-primary to-blue-500 text-white rounded-xl font-semibold text-sm shadow-sm shadow-primary/15 hover:shadow-md hover:shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-200"
         >
-          + Add Card
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+          Add More Cards
         </Link>
       </div>
 
