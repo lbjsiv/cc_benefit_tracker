@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MyCCPerks
+
+Track and maximize your credit card perks. No bank linking required.
+
+MyCCPerks helps you stay on top of credit card benefits that expire periodically — monthly credits, quarterly dining perks, annual hotel credits, free night certificates, and more. Never leave money on the table again.
+
+## Features
+
+- **Multi-card tracking** — Add any premium credit card and see all benefits in one place
+- **Credits & free nights** — Track both dollar-value credits and free night certificates separately
+- **Period-based tracking** — Benefits are organized by their reset frequency (monthly, quarterly, half-yearly, yearly)
+- **Expiration dates** — Set expiration reminders on free night certificates
+- **Annual fee overview** — See total annual fees across all cards and whether you're getting your money's worth
+- **No bank linking** — Your financial accounts stay private; we only track what you tell us
+- **PWA support** — Add to your iPhone/Android home screen for a native app experience
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **Database:** Supabase (PostgreSQL + Auth + Row Level Security)
+- **Styling:** Tailwind CSS 4
+- **Language:** TypeScript
+- **Deployment:** Vercel
+- **AI Pair Programmer:** Claude (Cursor)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- A [Supabase](https://supabase.com) project
+
+### Setup
+
+1. Clone the repo and install dependencies:
+
+```bash
+npm install
+```
+
+2. Create a `.env.local` file with your Supabase credentials:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+3. Run the database schema in the Supabase SQL Editor:
+
+```bash
+# See scripts/schema.sql for the full schema
+```
+
+4. Seed the card catalog:
+
+```bash
+npm run seed
+```
+
+5. Start the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Testing with a custom date
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+To test period boundaries, you can override the current date:
 
-## Learn More
+```bash
+DATE=2026-12-28 npm run dev:date
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/
+  (protected)/          # Authenticated routes
+    dashboard/          # Card overview + summary bar
+    credit-benefits/    # Credit benefits tracker
+    free-nights/        # Free night benefits tracker
+    annual-fees/        # Annual fee breakdown
+    cards/              # Card library + individual card detail
+    settings/           # Account & notification preferences
+  components/           # Shared UI components
+  login/                # Landing page + auth
+lib/
+  benefits.ts           # Period calculation logic
+  benefits-data.ts      # Server-side data fetching
+  useBenefitActions.ts  # Client-side benefit actions (mark, undo, save)
+  types.ts              # TypeScript interfaces
+  supabase/             # Supabase client (browser + server)
+scripts/
+  schema.sql            # Database schema
+  seed_credit_cards.ts  # Card + benefit seed data
+```
