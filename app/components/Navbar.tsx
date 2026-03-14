@@ -47,7 +47,7 @@ export default function Navbar() {
   const underlineClass = (path: string) =>
     `absolute bottom-0 left-1/2 h-0.5 bg-primary rounded-full transition-all duration-200 ${
       pathname === path
-        ? "w-2/3 -translate-x-1/2"
+        ? "w-full -translate-x-1/2"
         : "w-0 -translate-x-1/2"
     }`;
 
@@ -61,19 +61,19 @@ export default function Navbar() {
               <span className="hidden sm:inline">MyCCPerks</span>
             </Link>
             <Link href="/dashboard" className={linkClass("/dashboard")}>
-              Cards
+              {pathname === "/dashboard" && <svg className="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9H21.75M5.25 21h13.5a3 3 0 003-3V6a3 3 0 00-3-3H5.25a3 3 0 00-3 3v12a3 3 0 003 3z" /></svg>}Cards
               <span className={underlineClass("/dashboard")} />
             </Link>
             <Link href="/credit-benefits" className={linkClass("/credit-benefits")}>
-              Credits
+              {pathname === "/credit-benefits" && <svg className="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}Credits
               <span className={underlineClass("/credit-benefits")} />
             </Link>
             <Link href="/free-nights" className={linkClass("/free-nights")}>
-              Free Nights
+              {pathname === "/free-nights" && <svg className="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.72 9.72 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>}Free Nights
               <span className={underlineClass("/free-nights")} />
             </Link>
             <Link href="/annual-fees" className={linkClass("/annual-fees")}>
-              Annual Fees
+              {pathname === "/annual-fees" && <svg className="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185zM9.75 9h.008v.008H9.75V9zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 4.5h.008v.008h-.008V13.5zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>}Annual Fees
               <span className={underlineClass("/annual-fees")} />
             </Link>
           </div>
