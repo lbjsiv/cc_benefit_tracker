@@ -176,7 +176,7 @@ export default function LoginPage() {
               </svg>
             </div>
             <div>
-              <p className="text-md font-semibold text-foreground">No Bank Linking</p>
+              <p className="text-md font-semibold text-foreground">No Bank Linking Required</p>
               <p className="text-sm text-muted-foreground">Your transactions stay yours</p>
             </div>
           </div>
