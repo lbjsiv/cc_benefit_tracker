@@ -1,11 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/supabase/server";
 import SettingsClient from "./SettingsClient";
 
 export default async function SettingsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) return null;
+  const auth = await requireAuth();
+  if (!auth) return null;
+  const { supabase, user } = auth;
 
   const { data: settings } = await supabase
     .from("user_settings")

@@ -1,12 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/supabase/server";
 import { getNow, getCurrentPeriodEligibleDate, type Frequency, type BenefitType } from "@/lib/benefits";
 import DashboardClient from "./DashboardClient";
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) return null;
+  const auth = await requireAuth();
+  if (!auth) return null;
+  const { supabase, user } = auth;
 
   const { data: trackedCards } = await supabase
     .from("user_tracked_cards")
@@ -56,7 +55,7 @@ export default async function DashboardPage() {
   });
 
   // Group year-to-date usage rows by card
-  const usedYearByCard = new Map<string, UsedRow[]>();
+  const usedYearByCard = new Map<string, typeof usedRows>();
   usedRows.forEach((ub) => {
     const arr = usedYearByCard.get(ub.card_id) ?? [];
     arr.push(ub);

@@ -1,13 +1,12 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/supabase/server";
 import CardBadge from "@/app/components/CardBadge";
 import EmptyState from "@/app/components/EmptyState";
 
 export default async function AnnualFeesPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) return null;
+  const auth = await requireAuth();
+  if (!auth) return null;
+  const { supabase, user } = auth;
 
   const { data: trackedCards } = await supabase
     .from("user_tracked_cards")

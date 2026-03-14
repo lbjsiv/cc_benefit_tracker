@@ -1,11 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/supabase/server";
 import CardsLibraryClient from "./CardsLibraryClient";
 
 export default async function CardsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) return null;
+  const auth = await requireAuth();
+  if (!auth) return null;
+  const { supabase, user } = auth;
 
   const { data: allCards } = await supabase
     .from("dim_all_cards")

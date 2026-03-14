@@ -3,21 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import type { CardLibraryItem } from "@/lib/types";
 import CardBadge from "@/app/components/CardBadge";
 import CardRequestModal from "@/app/components/CardRequestModal";
 
-interface Card {
-  card_id: string;
-  card_name: string;
-  card_issuer: string;
-  image_url: string;
-  card_badge_acronym?: string | null;
-  card_badge_color?: string | null;
-  isTracked: boolean;
-}
-
 interface Props {
-  cards: Card[];
+  cards: CardLibraryItem[];
   userId: string;
 }
 

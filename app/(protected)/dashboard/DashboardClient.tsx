@@ -5,23 +5,9 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useState } from "react";
 import { getNow } from "@/lib/benefits";
+import type { CardSummary } from "@/lib/types";
 import CardBadge from "@/app/components/CardBadge";
 import EmptyState from "@/app/components/EmptyState";
-
-interface CardSummary {
-  card_id: string;
-  card_name: string;
-  card_issuer: string;
-  image_url: string;
-  card_badge_acronym?: string | null;
-  card_badge_color?: string | null;
-  card_points_multipliers?: string | null;
-  availableCount: number;
-  availableValue: number;
-  availableFreeNights: number;
-  usedCreditsValue: number;
-  usedFreeNights: number;
-}
 
 interface Props {
   cards: CardSummary[];

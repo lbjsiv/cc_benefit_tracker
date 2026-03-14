@@ -1,28 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
-import {
-  getNow,
-  getCurrentPeriodEligibleDate,
-  getPeriodLabel,
-  generateYearPeriods,
-  type Frequency,
-  type BenefitType,
-} from "@/lib/benefits";
-
-interface BenefitRow {
-  benefit_id: string;
-  card_id: string;
-  benefit_description: string;
-  benefit_category: string;
-  benefit_type: BenefitType;
-  value: number;
-  frequency: Frequency;
-  benefit_notes: string | null;
-}
+import { requireAuth } from "@/lib/supabase/server";
+import { getNow, type BenefitType } from "@/lib/benefits";
+import { type BenefitRow, buildBenefitMaps, buildAvailableBenefits, buildUsedBenefitGroups } from "@/lib/benefits-transform";
 
 export async function fetchCombinedBenefits(filterType: BenefitType) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  const auth = await requireAuth();
+  if (!auth) return null;
+  const { supabase, user } = auth;
 
   const { data: trackedCards } = await supabase
     .from("user_tracked_cards")
@@ -34,13 +17,7 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
     return { userId: user.id, totalCards: 0, availableBenefits: [], usedBenefitGroups: [] };
   }
 
-  interface CardInfo {
-    card_name: string;
-    card_issuer: string;
-    card_badge_acronym: string | null;
-    card_badge_color: string | null;
-  }
-  const cardInfoMap = new Map<string, CardInfo>();
+  const cardInfoMap = new Map<string, { card_name: string; card_issuer: string; card_badge_acronym: string | null; card_badge_color: string | null }>();
   (trackedCards ?? []).forEach((tc) => {
     const card = tc.dim_all_cards as unknown as {
       card_id: string;
@@ -73,86 +50,11 @@ export async function fetchCombinedBenefits(filterType: BenefitType) {
     .gte("eligible_date", `${currentYear}-01-01`);
 
   const benefitIds = new Set(benefits.map((b) => b.benefit_id));
-  const relevantRows = (usedBenefitsData ?? []).filter((ub) => benefitIds.has(ub.benefit_id));
+  const relevantRows = (usedBenefitsData ?? []).filter((ub: { benefit_id: string }) => benefitIds.has(ub.benefit_id));
 
-  const notesMap = new Map<string, { expiration_date: string | null }>();
-  const usedMap = new Map<string, { used_benefit_id: string; eligible_date: string; used_at: string; expiration_date: string | null }>();
-
-  relevantRows.forEach((ub) => {
-    const key = `${ub.benefit_id}_${ub.eligible_date}`;
-    if (ub.is_used) {
-      usedMap.set(key, {
-        used_benefit_id: ub.used_benefit_id,
-        eligible_date: ub.eligible_date,
-        used_at: ub.used_at,
-        expiration_date: ub.expiration_date ?? null,
-      });
-    } else {
-      notesMap.set(key, { expiration_date: ub.expiration_date ?? null });
-    }
-  });
-
-  const availableBenefits = benefits
-    .map((b) => {
-      const eligibleDate = getCurrentPeriodEligibleDate(b.frequency);
-      const key = `${b.benefit_id}_${eligibleDate}`;
-      const info = cardInfoMap.get(b.card_id);
-      const notes = notesMap.get(key);
-      return {
-        ...b,
-        card_name: info?.card_name ?? "",
-        card_issuer: info?.card_issuer ?? "",
-        card_badge_acronym: info?.card_badge_acronym ?? null,
-        card_badge_color: info?.card_badge_color ?? null,
-        eligibleDate,
-        periodLabel: getPeriodLabel(eligibleDate, b.frequency),
-        expiration_date: notes?.expiration_date ?? null,
-        isUsed: usedMap.has(key),
-      };
-    })
-    .filter((b) => !b.isUsed);
-
-  const usedByBenefitId = new Map<string, Array<{ used_benefit_id: string; eligible_date: string; used_at: string; expiration_date: string | null }>>();
-  relevantRows.filter((ub) => ub.is_used).forEach((ub) => {
-    const arr = usedByBenefitId.get(ub.benefit_id) ?? [];
-    arr.push({ used_benefit_id: ub.used_benefit_id, eligible_date: ub.eligible_date, used_at: ub.used_at, expiration_date: ub.expiration_date ?? null });
-    usedByBenefitId.set(ub.benefit_id, arr);
-  });
-
-  const usedBenefitGroups = benefits
-    .filter((b) => usedByBenefitId.has(b.benefit_id))
-    .map((b) => {
-      const usages = usedByBenefitId.get(b.benefit_id) ?? [];
-      const periods = generateYearPeriods(b.frequency, currentYear).map((p) => {
-        const usage = usages.find((u) => u.eligible_date === p.eligible_date);
-        return {
-          ...p,
-          isUsed: !!usage,
-          used_benefit_id: usage?.used_benefit_id,
-          used_at: usage?.used_at,
-          expiration_date: usage?.expiration_date ?? null,
-          canUndo: !!usage && !p.isFuture,
-        };
-      });
-      const info = cardInfoMap.get(b.card_id);
-      return {
-        benefit_id: b.benefit_id,
-        card_id: b.card_id,
-        card_name: info?.card_name ?? "",
-        card_issuer: info?.card_issuer ?? "",
-        card_badge_acronym: info?.card_badge_acronym ?? null,
-        card_badge_color: info?.card_badge_color ?? null,
-        benefit_description: b.benefit_description,
-        benefit_category: b.benefit_category,
-        benefit_type: b.benefit_type,
-        value: b.value,
-        frequency: b.frequency,
-        benefit_notes: b.benefit_notes,
-        usedCount: usages.length,
-        totalPeriods: periods.length,
-        periods,
-      };
-    });
+  const { notesMap, usedMap } = buildBenefitMaps(relevantRows);
+  const availableBenefits = buildAvailableBenefits(benefits, notesMap, usedMap, cardInfoMap);
+  const usedBenefitGroups = buildUsedBenefitGroups(benefits, relevantRows, cardInfoMap);
 
   return { userId: user.id, totalCards: cardIds.length, availableBenefits, usedBenefitGroups };
 }

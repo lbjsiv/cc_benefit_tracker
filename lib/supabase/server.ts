@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import type { User } from "@supabase/supabase-js";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -25,4 +26,15 @@ export async function createClient() {
       },
     }
   );
+}
+
+/**
+ * Returns the authenticated user, or null if not logged in.
+ * Shorthand for createClient + getUser boilerplate.
+ */
+export async function requireAuth(): Promise<{ supabase: Awaited<ReturnType<typeof createClient>>; user: User } | null> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  return { supabase, user };
 }
